@@ -1,0 +1,17 @@
+1.请求资源的URL和URI比较：
+    URL:统一资源定位符。http://localhost:8080/HttpSer/index.html。
+只能定位互联网资源。是URI 的子集.
+    URI:统一资源标记符。/HttpSer/index.html。
+用于标记任何资源。可以是本地文件系统，局域网的资源（//192.168.14.10/HttpSer/index.html），可以是互联网。
+
+2.请求方式:
+    常见的请求方式： GET 、 POST、 HEAD、 TRACE、 PUT、 CONNECT 、DELETE
+    常用的请求方式： GET(有将实体信息放在浏览器地址栏) 和 POST（隐藏实体内容）
+
+3. 请求头介绍:
+	请求头主要包含一些有用信息：
+		1.Host: localhost:8080主机地址和端口
+		2.Connection: keep-alive 连接方式
+		3.User-Agent:浏览器的一些信息
+		4.Referer:来访页面
+		5.Content：实体内容；post才有

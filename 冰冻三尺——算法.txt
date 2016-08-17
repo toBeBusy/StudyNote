@@ -1,0 +1,43 @@
+排序算法：
+    1.冒泡排序
+	像冒泡一样排序。
+	
+    2.插入排序
+	类似打牌时将牌按大小顺序插好一样。
+	数组中指定位置左侧的数是有序的，每次循环将右侧的一个数按顺序放入左侧。
+	插入排序适合小规模数组排序。
+
+    3.希尔排序
+	分组插入排序。先将整个待排元素序列分割成若干个子序列（由相隔某个“增量”的元素组成的）分别进行直接插入排序，
+    然后依次缩减增量再进行排序，待整个序列中的元素基本有序（增量足够小）时，再对全体元素进行一次直接插入排序。
+	
+	
+	4.二叉树的前，中，后序遍历，递归写法
+	//前序遍历  
+    public void preOrder(TreeNode subTree){  
+        if(subTree!=null){  
+            visted(subTree);  
+            preOrder(subTree.leftChild);  
+            preOrder(subTree.rightChild);  
+        }  
+    }  
+      
+    //中序遍历  
+    public void inOrder(TreeNode subTree){  
+        if(subTree!=null){  
+            inOrder(subTree.leftChild);  
+            visted(subTree);  
+            inOrder(subTree.rightChild);  
+        }  
+    }  
+      
+    //后续遍历  
+    public void postOrder(TreeNode subTree) {  
+        if (subTree != null) {  
+            postOrder(subTree.leftChild);  
+            postOrder(subTree.rightChild);  
+            visted(subTree);  
+        }  
+    } 
+
+	
