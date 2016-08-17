@@ -1,125 +1,114 @@
-ʹ�ö��߳̽���첽������Ӧ��������
-������Ŀ����Ҫ�����ǵ����첽�ӿ�����ģ�鷢�����ݡ�Ҫ����ESB���ͣ�����ESB�����ᷢ�Ͷ�����״���������ͻ��ӳ������ύ��ʱ�䡣
-����Ҫ�����ǽ��������⡣�ҿ�ԭ�����еĴ��붼�ǰ�һ����·��д�ġ�һ��ʼ�����øı�����Ĵ�����ʽ����ԭ�����߼������ύ����������
-��Ӱ�쵽���ݵ�һ���ԡ�
-�����뵽�ö��߳������������⡣������ESB���߼�����һ���߳��������������Ͳ����ڷ���ESB���߼����˷�ʱ�䣬��������ϵͳ�����ܡ�
-��Ϊ���п����ع����Ȿ�飬�������޸Ĵ����ͬʱ���ҿ��ǵ�������϶ȵ����⡣���󲿷ֵ��߼����ŵ�����ESB��service���档����������
-��ESB��service�����½�һ���ڲ��࣬�̳�Thread�ࡣ��ԭ���ķ����߼�д���ڲ����run�������档Ȼ������ṩһ���������������̡߳�
-��ԭ���Ĵ����߼����棬ֻ��Ҫ����ESBservice�������̵߳ķ�����OK�ˡ���󽵵��˴���֮�����϶ȡ�
+使用多线程解决异步发送响应慢的问题
+我们项目的主要工作是调用异步接口向别的模块发送数据。要经过ESB发送，但是ESB经常会发送堵塞的状况。这样就会延长事务提交的时间。
+经理要求我们解决这个问题。我看原来所有的代码都是按一个套路来写的。一开始打算用改变事务的传播方式来让原来的逻辑单独提交，但是这样
+会影响到数据的一致性。
+后来想到用多线程来解决这个问题。将发送ESB的逻辑另起一个线程来处理。这样就不用在发送ESB的逻辑上浪费时间，大大提高了系统的性能。
+因为我有看《重构》这本书，所以在修改代码的同时，我考虑到代码耦合度的问题。将大部分的逻辑都放到处理ESB的service里面。具体做法是
+在ESB的service里面新建一个内部类，继承Thread类。将原来的发送逻辑写到内部类的run方法里面。然后对外提供一个方法，来启动线程。
+在原来的处理逻辑里面，只需要调用ESBservice的启动线程的方法就OK了。大大降低了代码之间的耦合度。
 
 
-û�м�@Transactional�����ǩ�����³����ظ����ݵ����⡣�ӣ�����
+没有加@Transactional事务标签，导致出现重复数据的问题。坑！！！
 
 
-���Ʋ����ķ���(����Ҫ�Ż����������ٷ�����ִ��ʱ��)��
-1.ǰ̨��ť���ƣ�һ��ʱ��ֻ�ܵ��һ�Σ�
-2.action�м�redis������
-3.�������ĸ���ȼ���
+控制并发的方法(首先要优化方法，减少方法的执行时间)：
+1.前台按钮限制，一段时间只能点击一次；
+2.action中加redis的锁；
+3.提高事务的隔离等级；
 
 
-double���Ͳ���ֱ�����ڼ��㣬Ҫת����BigDecimal���͵ġ���Ȼ����־�����
+double类型不能直接用于计算，要转换成BigDecimal类型的。不然会出现精度误差。
 
 
 
 
 
 	
-���̣߳�
+多线程：
 	http://ifeve.com/java-memory-model-1/
 
-    1.volatile�ؼ��֣����Ա�֤�������̼߳�Ĺ����ԣ����ܱ�֤ԭ���ԡ�
-	volatile�ܱ�֤����������Ϊ��������volatile�Ĺؼ��ֻ���ʹ�߳�ÿ��ʹ�øñ�����ʱ������ڴ��и������ݡ�
-	����volatile���Ե�һ���÷����ǣ��Ѷ�volatile�����ĵ�����/д��������ʹ��ͬһ��������Щ������/д��������ͬ����
-	��һ��volatile�����ĵ�����/д���������һ����ͨ�����Ķ�/д����ʹ��ͬһ������ͬ��������֮���ִ��Ч����ͬ��
+    1.volatile关键字，可以保证变量在线程间的共享性，不能保证原子性。
+	volatile能保证共享性是因为，添加了volatile的关键字会迫使线程每次使用该变量的时候从主内存中更新数据。
+	理解volatile特性的一个好方法是：把对volatile变量的单个读/写，看成是使用同一个锁对这些单个读/写操作做了同步。
+	对一个volatile变量的单个读/写操作，与对一个普通变量的读/写操作使用同一个锁来同步，它们之间的执行效果相同。
 	
-	����i++�����⡣java������ʵ������̬�������Ԫ�ض��Ǳ����ڶ��ڴ�����ġ����ڴ��൱�����ڴ档
-	ÿ���̶߳����Լ��Ĺ����ڴ棬�߳��ڲ������ڴ��е�����ʱ�����ȴ����ڴ��и������ݵ��Լ��Ĺ����ڴ棬
-	�������֮���ڽ������ڴ��е����ݸ��ǵ����ڴ��С�
-	i++��JVM�ڲ��������������裺1.�����ڴ濽�����ݵ������ڴ棻2.��i��ֵ��1��3.��i��ֵ���ǵ����ڴ���ȥ
-	���һ���߳�ִ���˵�һ���͵ڶ�������û��ִ�е�������ʱ����һ���߳�����cup��ʹ��Ȩ��Ҳ�����ڴ��п�����
-	i��ֵ���Լ��ı����ڴ棬�ͻ����ԭ���Ե����⡣
+	例：i++的问题。java的所有实例，静态域和数组元素都是保存在堆内存里面的。堆内存相当于主内存。
+	每个线程都有自己的工作内存，线程在操作堆内存中的内容时，会先从主内存中复制数据到自己的工作内存，
+	处理完成之后，在将工作内存中的数据覆盖到主内存中。
+	i++在JVM内部被拆解成三个步骤：1.从主内存拷贝数据到本地内存；2.将i的值加1；3.将i的值覆盖到主内存中去
+	如果一个线程执行了第一步和第二步，还没有执行第三步的时候，另一个线程抢到cup的使用权，也从主内存中拷贝了
+	i的值到自己的本地内存，就会出现原子性的问题。
 
 
 
 
 
 
-	JVM�ڴ�ģ��:
-	��java�У�����ʵ���򡢾�̬�������Ԫ�ش洢�ڶ��ڴ��У����ڴ����߳�֮�乲��������ʹ�á�������������������ָ
-	ʵ���򣬾�̬�������Ԫ�أ����ֲ�������Local variables�����������������java���Թ淶��֮Ϊformal method 
-	parameters�����쳣������������exception handler parameters���������߳�֮�乲�������ǲ������ڴ�ɼ������⣬
-	Ҳ�����ڴ�ģ�͵�Ӱ�졣
+	JVM内存模型:
+	在java中，所有实例域、静态域和数组元素存储在堆内存中，堆内存在线程之间共享（本文使用“共享变量”这个术语代指
+	实例域，静态域和数组元素）。局部变量（Local variables），方法定义参数（java语言规范称之为formal method 
+	parameters）和异常处理器参数（exception handler parameters）不会在线程之间共享，它们不会有内存可见性问题，
+	也不受内存模型的影响。
 
 
 
 
 
 	
-    2.������
-		��ִ�г���ʱΪ��������ܣ��������ʹ������������ָ������������������������ͣ�
-		1. �������Ż��������򡣱������ڲ��ı䵥�̳߳��������ǰ���£��������°�������ִ��˳��
-		2. ָ����е��������ִ�������������ָ����м�����Instruction-Level Parallelism�� ILP����������ָ���ص�ִ�С�
-		������������������ԣ����������Ըı�����Ӧ����ָ���ִ��˳��
-		3. �ڴ�ϵͳ�����������ڴ�����ʹ�û���Ͷ�/д����������ʹ�ü��غʹ洢��������ȥ������������ִ�С�
-		������1���ڱ�����������2��3���ڴ�������������Щ�����򶼿��ܻᵼ�¶��̳߳�������ڴ�ɼ������⡣���ڱ�������
-		JMM�ı����������������ֹ�ض����͵ı����������򣨲������еı�����������Ҫ��ֹ�������ڴ�����������JMM�Ĵ�
-		��������������Ҫ��java������������ָ������ʱ�������ض����͵��ڴ����ϣ�memory barriers��intel��֮Ϊmemory fence��
-		ָ�ͨ���ڴ�����ָ������ֹ�ض����͵Ĵ����������򣨲������еĴ�����������Ҫ��ֹ����
-		JMM�������Լ����ڴ�ģ�ͣ���ȷ���ڲ�ͬ�ı������Ͳ�ͬ�Ĵ�����ƽ̨֮�ϣ�ͨ����ֹ�ض����͵ı�����������ʹ�����������
-		Ϊ����Ա�ṩһ�µ��ڴ�ɼ��Ա�֤��
+    2.重排序：
+		在执行程序时为了提高性能，编译器和处理器常常会对指令做重排序。重排序分三种类型：
+		1. 编译器优化的重排序。编译器在不改变单线程程序语义的前提下，可以重新安排语句的执行顺序。
+		2. 指令级并行的重排序。现代处理器采用了指令级并行技术（Instruction-Level Parallelism， ILP）来将多条指令重叠执行。
+		如果不存在数据依赖性，处理器可以改变语句对应机器指令的执行顺序。
+		3. 内存系统的重排序。由于处理器使用缓存和读/写缓冲区，这使得加载和存储操作看上去可能是在乱序执行。
+		上述的1属于编译器重排序，2和3属于处理器重排序。这些重排序都可能会导致多线程程序出现内存可见性问题。对于编译器，
+		JMM的编译器重排序规则会禁止特定类型的编译器重排序（不是所有的编译器重排序都要禁止）。对于处理器重排序，JMM的处
+		理器重排序规则会要求java编译器在生成指令序列时，插入特定类型的内存屏障（memory barriers，intel称之为memory fence）
+		指令，通过内存屏障指令来禁止特定类型的处理器重排序（不是所有的处理器重排序都要禁止）。
+		JMM属于语言级的内存模型，它确保在不同的编译器和不同的处理器平台之上，通过禁止特定类型的编译器重排序和处理器重排序，
+		为程序员提供一致的内存可见性保证。
 
 
 
 
 
 		
-	3.synchronized�ؼ���
-		1.synchronized�ؼ���ȡ�õ������Ƕ��������ĸ��߳���ִ�д�synchronized�ؼ��ֵķ������ĸ��߳̾ͳ��и÷��������������Lock����ô�����߳�ֻ�ܳʵȴ�״̬��ǰ���Ƕ���̷߳��ʵ���ͬһ������
-		2.synchronized�ؼ������εķ����൱��synchronized(this).�����ǵ�ǰ����
-		3.ֻ�й�����Դ�Ķ�д����Ҫͬ������������ǹ�����Դ����ô������û��ͬ���ı�Ҫ��
-		4.���A�߳��ȳ���object�����Lock����B�߳̿������첽�ķ�ʽ����object�����еķ�synchronized���͵ķ�����
-		5.���A�߳��ȳ���object�����Lock����B�߳��������ʱ����object�����е�synchronized���͵ķ���������Ҫ�ȴ���
-		6.���һ��������ڲ���ʵ������������£�����ǲ�ͬ�̡߳�������ʵ�������Ľ����
-		7.�������ͨ�����������������ø����ͬ���������������synchronized�����У����Ե��ø����synchronized������
-		8.��һ���߳�ִ�еĴ�������쳣ʱ���������е������Զ��ͷš�
-		9.�������߳�A������һ������������ͬʱ�߳�B����������������һ���ͻ������������
-		10.ͬ��synchronized�������Խ��һ���߳̿��������ڲ�һ�µ�״̬�������Ա�֤����ͬ����������ͬ��������ÿ���̣߳���������ͬһ��������֮ǰ���е��޸�Ч����
+	3.synchronized关键字
+		1.synchronized关键字取得的锁都是对象锁，哪个线程先执行带synchronized关键字的方法，哪个线程就持有该方法所属对象的锁Lock，那么其他线程只能呈等待状态，前提是多个线程访问的是同一个对象。
+		2.synchronized关键字修饰的方法相当于synchronized(this).锁的是当前对象。
+		3.只有共享资源的读写才需要同步化，如果不是共享资源，那么根本就没有同步的必要。
+		4.如果A线程先持有object对象的Lock锁，B线程可以以异步的方式调用object对象中的非synchronized类型的方法。
+		5.如果A线程先持有object对象的Lock锁，B线程如果在这时调用object对象中的synchronized类型的方法，则需要等待。
+		6.脏读一定会出现在操作实例变量的情况下，这就是不同线程“争抢”实例变量的结果。
+		7.子类可以通过“可重入锁”调用父类的同步方法。即子类的synchronized方法中，可以调用父类的synchronized方法。
+		8.当一个线程执行的代码出现异常时，其所持有的锁会自动释放。
+		9.死锁：线程A持有锁一，申请锁二；同时线程B持有锁二，申请锁一。就会出现死锁现象。
+		10.同步synchronized不仅可以解决一个线程看到对象处于不一致的状态，还可以保证进入同步方法或者同步代码块的每个线程，都看到由同一个锁保护之前所有的修改效果。
 
 
 
 
-	4.��64λ�ı���long��double��д����������ԭ���ԡ�
+	4.对64位的变量long和double的写操作不具有原子性。
 	
 
 
 
 
-	5.happens-before����
-		����˳�����һ���߳��е�ÿ��������happens- before�ڸ��߳��е��������������
-		�����������򣺶�һ�����������Ľ�����happens- before������������������ļ�����
-		volatile�������򣺶�һ��volatile���д��happens- before��������������volatile��Ķ���
-		�����ԣ����A happens- before B����B happens- before C����ôA happens- before C��
+	5.happens-before规则
+		程序顺序规则：一个线程中的每个操作，happens- before于该线程中的任意后续操作。
+		监视器锁规则：对一个监视器锁的解锁，happens- before于随后对这个监视器锁的加锁。
+		volatile变量规则：对一个volatile域的写，happens- before于任意后续对这个volatile域的读。
+		传递性：如果A happens- before B，且B happens- before C，那么A happens- before C。
 
 
 
 
 
 		
-	6.��ƽ���ͷǹ�ƽ�����ڴ����������ܽ᣺
-		1.��ƽ���ͷǹ�ƽ���ͷ�ʱ�����Ҫдһ��volatile����state��
-		2.��ƽ����ȡʱ�����Ȼ�ȥ�����volatile������
-		3.�ǹ�ƽ����ȡʱ�����Ȼ���CAS�������volatile����,�������ͬʱ����volatile����volatileд���ڴ����塣
-
-
-
-
-
-
-
-		
-	7.Java���߳�ͬ�����Ƶĸ���ԭ����
-		1.����volatile������д-�������е��ڴ����塣
-		2.����CAS��������volatile����volatileд���ڴ����塣
+	6.公平锁和非公平锁的内存语义做个总结：
+		1.公平锁和非公平锁释放时，最后都要写一个volatile变量state。
+		2.公平锁获取时，首先会去读这个volatile变量。
+		3.非公平锁获取时，首先会用CAS更新这个volatile变量,这个操作同时具有volatile读和volatile写的内存语义。
 
 
 
@@ -128,29 +117,40 @@ double���Ͳ���ֱ�����ڼ��㣬Ҫת����BigDecimal���͵ġ���Ȼ����־�����
 
 
 		
-	8.����java��CASͬʱ����volatile����volatileд���ڴ����壬���Java�߳�֮���ͨ�����������������ַ�ʽ��
-		1.A�߳�дvolatile���������B�̶߳����volatile������
-		2.A�߳�дvolatile���������B�߳���CAS�������volatile������
-		3.A�߳���CAS����һ��volatile���������B�߳���CAS�������volatile������
-		4.A�߳���CAS����һ��volatile���������B�̶߳����volatile������
+	7.Java多线程同步机制的根本原理：
+		1.利用volatile变量的写-读所具有的内存语义。
+		2.利用CAS所附带的volatile读和volatile写的内存语义。
+
+
+
+
+
+
+
+		
+	8.由于java的CAS同时具有volatile读和volatile写的内存语义，因此Java线程之间的通信现在有了下面四种方式：
+		1.A线程写volatile变量，随后B线程读这个volatile变量。
+		2.A线程写volatile变量，随后B线程用CAS更新这个volatile变量。
+		3.A线程用CAS更新一个volatile变量，随后B线程用CAS更新这个volatile变量。
+		4.A线程用CAS更新一个volatile变量，随后B线程读这个volatile变量。
 		
 	
 
 		
-	9.�����߳�
-		���߳����ж���һ��volatile��boolean�ͱ�����ͬʱ����ñ�����set��������run�������жϸ�boolean������ֵ�������߳��Ƿ����ִ�С����Ҫֹͣ�̣߳������߳��⽫��boolean������ֵ��Ϊfalse��
+	9.结束线程
+		在线程类中定义一个volatile的boolean型变量，同时定义该变量的set方法。在run方法中判断该boolean变量的值，决定线程是否继续执行。如果要停止线程，则在线程外将该boolean变量的值设为false。
 
 
-	10.util��������ԭ���ࡣԭ������ԭ�Ӳ������õ����ͣ���������û����������������̰߳�ȫ��ԭ����Ҳ������ȫ��ȫ�ģ����ܹ���֤�����ȷ�������ܱ�ִ֤��˳����ȷ��
-
-	
+	10.util包下面有原子类。原子类是原子操作可用的类型，它可以在没有锁的情况下做到线程安全。原子类也不是完全安全的，它能够保证结果正确，但不能保证执行顺序正确。
 
 	
-	�̼߳�ͨ�ţ�
-	1.�̼߳�ͨ�ŵ���Ҫ������
-		1.ʹ��wait/notifyʵ���̼߳��ͨ�ţ�
-		2.������/������ģʽ��ʵ�֣�
-		3.join������ʹ�ã�
-		4.ThreadLocal���ʹ�ã�
+
+	
+	线程间通信：
+	1.线程间通信的主要方法：
+		1.使用wait/notify实现线程间的通信；
+		2.生产者/消费者模式的实现；
+		3.join方法的使用；
+		4.ThreadLocal类的使用；
 	
 	
