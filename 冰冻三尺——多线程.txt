@@ -152,5 +152,24 @@ double类型不能直接用于计算，要转换成BigDecimal类型的。不然�
 		2.生产者/消费者模式的实现；
 		3.join方法的使用；
 		4.ThreadLocal类的使用；
+
+
+	ReentrantLock类的使用：
+		监视器类:Condition。
+		Object的wait方法，相当于Condition的await()方法。
+		Object的notify方法，相当于Condition的signal()方法。
+		Object的notifyAll方法，相当于Condition的signalAll()方法。
+
+		Condition可以创建多个，对某一单独的线程使用单独的Condition，因此可以唤醒特定的线程。
+		synchronized关键字没有此用法。
 	
 	
+	spring的bean的生命周期：
+		1.singleton(默认值)；当一个bean的作用域被设置成singleton，那么该bean容器中只会存在一个共享的bean实例。
+		2.prototype：每一次请求(将其注入到另一个bean中，或者以程序的方式调用容器的getBean()方法)都会产生一个新的bean的实例。需要注意的是，spring不能对prototype类型的bean的整个生命周期负责，创建完prototype类型的bean之后spring容器就不再对该bean进行管理。清除prototype作用域的对象并释放任何prototype bean所持有的昂贵资源，都是客户端代码的职责。
+		3.request：针对每次HTTP请求都会产生一个新的bean，同时该bean仅在当前HTTPrequest内有效。
+		4.session：session作用域表示该针对每一次HTTP请求都会产生一个新的bean，同时该bean仅在当前HTTPsession内有效。
+		5.global session:global session作用域类似于标准的HTTPsession作用域。在global session作用域中定义的bean被限定于全局portlet Session的生命周期范围内。如果你在web中使用global session作用域来标识bean，那么web会自动当成session类型来使用。
+		6.自定义bean的作用域。待研究。。。。
+		说明：定义request，session，global session类型的作用域需要加一个ContextListener。
+		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>

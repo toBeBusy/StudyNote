@@ -1,0 +1,24 @@
+Foss缓存实现：
+	1.每个具体的Cache类继承一个FossTTLCache<ExpressLineEntity>类
+	2.FossTTLCache<ExpressLineEntity>类中没有具体的实现，只定义了一些字符串用于识别各个具体的Cache类是哪个类，主要用于记录日志用和作为各个缓存key的前缀。
+	3.FossTTLCache<ExpressLineEntity>类继承了DefaultTTLRedisCache<V>类。DefaultTTLRedisCache<V>类是具体执行缓存的查询和插入操作的类。该类有两个成员变量cacheStorage用于查询缓存。cacheProvider用于插入缓存。查询时首先由cacheStorage到redis里面查询，如果没查到。则使用cacheProvider从数据库查询，并插入到redis中。
+	4.cacheStorage和cacheProvider具体实现都是根据各个具体的Cache类来的。每个具体的Cache类在初始化的时候注入cacheStorage和cacheProvider的具体实现。
+	5.在查询和插入数据时，每个Exception都会在日志中记录。
+	6.实体类信息会被转换成接送字符串保存到redis中，查询时再转换成具体的实体类。通过泛型来约束，转换工具com.alibaba.fastjson.JSON。
+	7.service层在使用时通过CacheManager来管理redis操作，CacheManager中有一个Map类型的成员变量，用来保存所有的缓存实例。key就是FossTTLCache类中定义的字符串。
+
+
+Foss权限管理系统：
+	1.
+
+
+1.redis中的通配符：
+	1.“?”:匹配一个字符
+	2.“*”:匹配任意个（包括0个）字符
+	3.[] :匹配括号间的任一字符
+	4.\x :匹配字符x,用于转义符号。如要匹配"?"就需要用\?。
+
+2.redis持久化：
+	1.RDB方式持久化。
+	2.AOF方式持久化。
+	3.RDB默认开启，AOF默认关闭。通过配置文件控制两种方式的各个参数。一般是RDB和AOF混合使用。
