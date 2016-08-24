@@ -22,3 +22,153 @@ Foss权限管理系统：
 	1.RDB方式持久化。
 	2.AOF方式持久化。
 	3.RDB默认开启，AOF默认关闭。通过配置文件控制两种方式的各个参数。一般是RDB和AOF混合使用。
+
+
+
+Jedis
+	Jedis线程不安全的，可以使用JedisPool来创建Jedis实例。需要使用Jedis的时候从JedisPool线程池中获取。
+
+	//向redis中存入字符串
+	jedis.set("key", "value");
+
+	//将jintao append到已经有的value之后
+	jedis.append("key","jintao");
+
+	//覆盖原来的数据
+	jedis.set("key","newValue");
+
+	//删除key对应的数据
+	jedis.del("key");
+
+	//若key不存在，则存储  
+    jedis.setnx("key", "value"); 
+
+    //List操作：可以使用列表模拟队列(queue)、堆栈(stack)，并且支持双向的操作(L或者R)。
+    //右边入队：
+    jedis.rpush("listName","value");
+
+    //左边入队：
+    jedis.lpush("listName","value");
+
+    //右边出队：
+    jedis.rpop("listName");
+
+    //左边出队：
+    jedis.lpop("listName");
+
+    //返回改list从0开始，到最后一个(-1) 的值。
+    List<String> userList = jedis.lrange("userList", 0, -1);
+
+    //设置：位置1处为新值
+    jedis.lset("listName", 1, "NewValue");
+
+    //返回长度
+    Long size = jedis.llen("listName");
+
+    //进行裁剪：包含
+    jedis.ltrim("listName", 1, 2);
+
+
+
+
+    //无序集合
+    //使用set：和列表不同，集合中的元素是无序的，因此元素也不能重复。
+    jedis.sadd("fruit", "apple");
+	jedis.sadd("fruit", "pear", "watermelon");
+	jedis.sadd("fruit", "apple");
+
+	//遍历集合
+	Set<String> fruit = jedis.smembers("fruit");
+
+	//移除元素
+	jedis.srem("fruit", "pear");
+
+	//返回长度
+	Long size = jedis.scard("fruit");
+
+	//判断是否包含某元素
+	Boolean isMember = jedis.sismember("fruit", "pear");
+
+	//集合的操作：包括集合的交运算(sinter)、差集(sdiff)、并集(sunion)
+	jedis.sadd("food", "bread", "milk"); 
+	Set<String> fruitFood = jedis.sunion("fruit", "food");
+
+
+
+	//有序集合
+	//使用sorted set：有序集合在集合的基础上，增加了一个用于排序的参数。
+	//有序集合：根据“第二个参数”进行排序。
+	jedis.zadd("user", 22, "James");
+
+	//再次添加：元素相同时，更新为当前的权重。
+	jedis.zadd("user", 24, "James");
+
+	//zset的范围：找到从0到-1的所有元素。
+	Set<String> user = jedis.zrange("user", 0, -1);
+
+
+
+
+	//使用hash
+	//1.存放数据：使用HashMap
+	Map<String, String>  capital = new HashMap<String, String>();
+	capital.put("shannxi", "xi'an");
+	capital.put("shanghai", "shanghai");
+	jedis.hmset("capital", capital);
+
+	//2. 获取数据：
+	List<String> cities = jedis.hmget("capital", "shannxi", "shanghai");
+
+
+
+
+	//对key的操作：
+	//对key的模糊查询
+	Set<String> keys = jedis.keys("*");
+	Set<String> keys = jedis.keys("user.userid.*");
+
+	//删除key
+	jedis.del("city");
+
+	//判断是否存在
+	Boolean isExists = jedis.exists("user.userid.14101");
+
+	//设置失效时间
+	jedis.setex("user.userid.14101", 5, "James");
+
+	//查询存活时间
+	Long seconds = jedis.ttl("user.userid.14101");
+
+	//去掉key的expire设置：不再有失效时间
+	jedis.persist("user.userid.14101");
+
+	//自增的整型
+	jedis.set("amount", 100 + "");
+
+	//递增或递减：incr()/decr()
+	jedis.incr("amount");
+
+	//增加或减少：incrBy()/decrBy()
+	jedis.incrBy("amount", 20);
+
+	//数据清空
+	//清空当前db： 
+	jedis.flushDB();
+
+	//清空所有db：
+	jedis.flushAll();
+
+	//事务支持：
+	//获取事务
+	Transaction tx = jedis.multi();
+	//批量操作：tx采用和jedis一致的API接口
+	for(int i = 0;i < 10;i ++) {
+    	tx.set("key" + i, "value" + i); 
+    	System.out.println("--------key" + i);
+    	Thread.sleep(1000);  
+	}
+	//执行事务：针对每一个操作，返回其执行的结果，成功即为Ok
+	List<Object> results = tx.exec();
+
+
+

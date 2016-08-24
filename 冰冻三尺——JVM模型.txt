@@ -27,14 +27,14 @@
 GC基础：
 	1.JAVA内存主要由Perm和Heap组成。
 	2.Perm中主要存放JVM自己的反射对象，比如类对象和方法对象等。
-	3.Heap又分为OldSpace和NewSpace。NewSpace又分为Eden和两个Survivor Spaces(from,to)。
-Eden用来存放新生的对象。survivor用来存放NewSpace中每次GC过后存活下来的对象。OldSpace主要存放应用程序中生命周期长的内存对象。
+	3.Heap又分为Old区和Yong区。Yong区又分为Eden和两个Survivor Spaces(from,to)。
+Eden用来存放新生的对象。survivor用来存放Yong区中每次GC过后存活下来的对象。Old区主要存放应用程序中生命周期长的内存对象。
 
 
 
 垃圾回收描述：
-	在NewSpace中垃圾回收一般用Copying的算法，速度快。每次GC存活下来的对象首先由Eden拷贝到某个SurvivorSpace，
-当SurvivorSpace空间满了后，剩下的live对象直接拷贝到OldSpace中去。因此，每次GC后，Eden内存块会被清空。在OldSpace
+	在Yong区中垃圾回收一般用Copying的算法，速度快。每次GC存活下来的对象首先由Eden拷贝到某个SurvivorSpace，
+当SurvivorSpace空间满了后，剩下的live对象直接拷贝到Old区中去。因此，每次GC后，Eden内存块会被清空。在Old区
 块中，垃圾回收一般用mark-compact的算法，速度慢些，但是减少内存要求。
 	垃圾回收分多级，0级为全部回收，会回收Old段中的垃圾；1级或以上为部分垃圾回收，只会回收New中的垃圾，内存溢出通常发生于
 Old段或Perm段垃圾回收后，仍然无内存空间容纳新的Java对象的情况。 
