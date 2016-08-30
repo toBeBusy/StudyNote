@@ -1,0 +1,158 @@
+网址：http://ifeve.com/overview/
+NIO服务器端编程示例：http://ifeve.com/netty-2-3-4/
+NIO客户端编程示例：http://ifeve.com/netty-2-3-4/
+Java NIO框架Mina、Netty
+
+1.Channel
+	基本上所有的IO在NIO中都是从一个Channel开始的，Channel有点像IO里的流。数据可以从Channel读到Buffer中
+也可以从Buffer写到Channel中。常见的Channel类型：FileChannel，DatagramChannel，SocketChannel，ServerSocketChannel。
+这些通道涵盖了UDP 和 TCP 网络IO，以及文件IO。
+
+2.Buffer
+	NIO里面关键的Buffer实现：ByteBuffer，CharBuffer，DoubleBuffer，FloatBuffer，IntBuffer，LongBuffer，ShortBuffer
+这些Buffer覆盖了你能通过IO发送的基本数据类型：byte，short，int，long，float，double和char。
+
+3.Selector
+	Selector允许单线程处理多个Channel。如果你的应用打开了多个连接(通道)，但是每个连接的流量都很低，使用Selector就会很方便。
+例如，在一个聊天服务器中。在一个单线程中可以使用Selector来控制多个Channel。要使用Selector得向Selector注册Channel，然后调用
+它的select()方法。这个方法会一直阻塞到某个注册的通道有事件就绪。一旦这个方法返回，线程就可以处理这些事件，事件的例子有如新
+连接进来，数据接收等。
+
+
+Buffer
+	切记，Buffer的初始状态是read状态，如果初始完成后要写入数据要调用flip()方法。
+
+	capacity
+	作为一个内存块，Buffer有一个固定的大小值，也叫“capacity”.你只能往里写capacity个byte、long，char等类型。一旦Buffer满了，
+	需要将其清空（通过读数据或者清除数据）才能继续写数据往里写数据。
+
+	position
+	当你写数据到Buffer中时，position表示当前的位置。初始的position值为0.当一个byte、long等数据写到Buffer后， position会向前移动到下一个可插入数据的Buffer单元。position最大可为capacity – 1.当读取数据时，也是从某个特定位置读。当将Buffer从写模式切换到读模式，position会被重置为0. 当从Buffer的position处读取数据时，position向前移动到下一个可读的位置。
+
+	limit
+	在写模式下，Buffer的limit表示你最多能往Buffer里写多少数据。 写模式下，limit等于Buffer的capacity。
+	当切换Buffer到读模式时， limit表示你最多能读到多少数据。因此，当切换Buffer到读模式时，limit会被设置成写模式下的position值
+	。换句话说，你能读到之前写入的所有数据（limit被设置成已写数据的数量，这个值在写模式下就是position）
+
+	scatter/gather
+	分散（scatter）从Channel中读取是指在读操作时将读取的数据写入多个buffer中。因此，Channel将从Channel中读取的数据“分散（scat
+	ter）”到多个Buffer中。
+	聚集（gather）写入Channel是指在写操作时将多个buffer的数据写入同一个Channel，因此，Channel将多个Buffer中的数据“聚集（gathe
+	r）”后发送到Channel。
+
+Selector
+	使用Selector可以用一个线程来管理多个通道。
+
+	Selector的创建
+	通过调用的Selector.open()方法创建一个Selector，如下：Selector selector =  Selector.open();
+
+	向Selector注册通道
+	为了将Channel和Selector配合使用，必须将Channel注册到selector上。通过SelectableChannel.register()方法来实现，如下：
+	channel.configureBlocking(false);
+	SelectionKey key = channel.register(selector,Selectionkey.OP_READ);
+	与Selector一起使用时，Channel必须处于非阻塞模式下。这意味着不能将FileChannel与Selector一起使用，因为FileChannel不能切换到
+非阻塞模式。而套接字通道都可以。
+	注意register()方法的第二个参数。这是一个"interest集合",意思是在通过Selector监听Channel时对什么事件感兴趣。
+可以监听四中不同类型的事件：
+	1.Connect
+	2.Accept
+	3.Read
+	4.Write
+	通道触发了一个事件意思是该事件已经就绪。所以，某个channel成功连接到另一个服务器称为"连接就绪"。一个server socket channel
+准备好接收新进入的连接称为"接收就绪"。一个有数据可读的通道可以说是"读就绪"。等待写数据的通道可以说是"写就绪"。
+	这四种事件用SelectionKey的四个常量来表示：
+	1.SelectionKey.OP_CONNECT    连接就绪
+	2.SelectionKey.OP_ACCEPT	 接收就绪
+	3.SelectionKey.OP_READ		 读就绪
+	4.SelectionKey.OP_WRITE		 写就绪
+如果你对不止一种事件感兴趣，那么可以用“位或”操作符将常量连接起来，如下：
+	int interestSet = SelectionKey.OP_READ | SelectionKey.OP_WRITE;
+
+	SelectionKey
+	当向Selector注册Channel时，register()方法会返回一个SelectionKey对象。这个对象包含了一些你感兴趣的属性：
+	1.interest集合
+	2.ready集合
+	3.Channel
+	4.Selector
+	5.附加信息
+
+	interest集合
+	interest集合是你所选择的感兴趣的事件集合。可以通过SelectionKey读写interest集合，像这样：
+		int interestSet = selectionKey.interestOps();
+		boolean isInterestedAccept = (interestSet & SelectionKey.OP_ACCEPT) == SelectionKey.OP_ACCEPT;
+		boolean isInterestedInConnect = (interestSet & SelectionKey.OP_CONNECT) == SelectionKey.OP_CONNECT;
+		boolean isInterestedInRead = (insterestSet & SelectionKey.OP_READ) == SelectionKey.OP_READ;
+		boolean isInterestedInWrite = (insterestSet & SelectionKey.OP_WRITE) == SelectionKey.OP_WRITE;
+	通过"位与"操作interest集合和给定的SelectionKey常量，可以确定某个事件是否在interest集合中。
+
+ready集合
+	ready集合是通道已经准备就绪的操作的集合。你可以这样访问ready集合:
+		int readySet = selectionKey.readyOps(); 
+	可以用像检测interest集合那样的方法，来检测Channel中什么事件或操作已经就绪。但是，也可以使用一下四个方法，
+它们都会返回一个布尔类型：
+	1.selectionKey.isAcceptable();
+	2.selectionKey.isConnectable();
+	3.selectionKey.isReadable();
+	4.sekectionKey.isWritable();
+
+从SelectionKey中获取Channel和Selector：
+	Channel channel = selectionKey.channel();
+	Selector selector = selectionKey.selector();
+
+附加对象：可以将一个对像或者更多信息附着到SelectionKey上，这样就能方便的识别某个给定的通道。附加方法如下：
+	selectionKey.attach(theObject);
+	Object attachedObj = selectionKey.attachment();
+或者用register()方法向Selector注册Channel的时候附加对像。如：
+	SelectionKey key = channel.register(selector, SelectionKey.OP_READ, theObject);
+
+通过Selector选择通道
+	一旦向Selector注册了一个或多个通道，就可以调用几个重载的select()方法，这些方法返回你所感兴趣的事件(如连接，接受，
+读或写)已经准备就绪的那些通道。换句话说，如果你对"读就绪"的通道感兴趣，select()方法会返回读事件已经就绪的那些通道。
+
+下面是select()方法：
+	int select();   //会阻塞
+	int select(long timeout);  //阻塞timeout毫秒
+	int selectNow();  //不会阻塞，立马返回。
+select()方法阻塞到至少有一个通道在你注册的事件上就绪了。
+select(long timeout)和select()一样，除了最长会阻塞timeout毫秒(参数)。
+selectNow不会阻塞，不管有没有通道就绪都立刻返回。
+
+select()方法返回的int值表示有多少通道已经就绪。亦即，自上次调用select()方法后有多少通道变成就绪状态。如果调用select()方法
+，因为有一个通道变成就绪状态，返回了1，若再次调用select()方法，如果另一个通道就绪了，它会再次返回1.如果对第一个就绪的channel
+没有做任何操作，现在就有两个就绪的通道，但是在每次select()方法调用之间，只有一个通道就绪了。
+调用过select()方法只后。如果返回值表明有一个或更多通道就绪了，就可以通过调用selector的selectKeys()方法，访问"已选择健集"中的
+就绪通道，如下所示：
+	Set selectedKeys = selector.selectedKeys();
+可以遍历这个已选择的键集合来访问就绪的通道。如下：
+	Set selectKeys = selector.selectedKeys();
+	Iterator keyIterator = selectedKey.iterator();
+	while(keyIterator.hasNext()){
+		SelectionKey key = keyIterator.next();
+		if(key.isAcceptable){
+			// 接收就绪
+		} 
+		if(key.isConnectable()){
+			// 连接就绪
+		}
+		if(key.isReadable()){
+			// 读就绪
+		}
+		if(key.isWritable()){
+			// 写就绪
+		}
+		keyIterator.remove();
+	}
+这个循环遍历已选择键集中的每个键，并检测各个键所对应的通道的就绪事件。
+
+注意每次迭代末尾的keyIterator.remove()调用。Selector不会自己从已选择键集中移除SelectionKey实例。
+必须在处理完通道时自己移除。
+下次该通道变成就绪时，Selector会再次将其放入已选择健集中。
+SelectionKey.channel()方法返回的通道需要转型成你要处理的类型，如ServerSocketChannel或SocketChannel等。
+
+wakeUp()
+某个线程调用select()方法后阻塞了，即使没有通道已经就绪，也有办法让其从select()方法返回。
+只要让其它线程在第一个线程调用的select()方法的那个对象上调用selector.wakeup()方法即可。阻塞在select()方法上的线程会立马返回。
+如果有其它线程调用了wakeup()方法，但当前没有线程阻塞在select()方法上，下个调用select()方法的线程会立即"醒来(wake up)"。
+
+close()
+用完Selector之后调用其close()方法会关闭该Selector，且使注册到该Selector上的所有SelectionKey实例无效。通道本身并不会关闭。
