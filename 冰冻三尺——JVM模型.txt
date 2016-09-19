@@ -7,13 +7,15 @@
 
 2.装载JVM.cfg：
 	1.JVM.cfg文件JRE路径+\lib+\ARCH（CPU构架）+\JVM.cfgARCH（CPU构架）的判断是通过Java_md.c中GetArch函数判断的，该函数中windows平台只有两种情况：WIN64的‘ia64’，其他情况都为‘i386’。
-	2.在我们的jdk目录中jre\bin\server和jre\bin\client都有JVM.dll文件存在，而Java正是通过JVM.cfg配置文件来管理这些不同版本的JVM.
-dll的．
-	3.获得JVM.dll的路径，JRE路径+\bin+\JVM类型字符串+\JVM.dll就是JVM的文件路径了，但是如果在调用Java程序时用-XXaltJVM=参数指定的路径path,就直接用path+\JVM.dll文件做为JVM.dll的文件路径
+	2.在我们的jdk目录中jre\bin\server和jre\bin\client都有JVM.dll文件存在，而Java正是通过JVM.cfg配置文
+件来管理这些不同版本的JVM.dll的．
+	3.获得JVM.dll的路径，JRE路径+\bin+\JVM类型字符串+\JVM.dll就是JVM的文件路径了，但是如果在调用Java
+程序时用-XXaltJVM=参数指定的路径path,就直接用path+\JVM.dll文件做为JVM.dll的文件路径
 
 
 3.装载JVM.dll：
-	第2步已经找到了JVM的路径，Java通过LoadJavaVM来装入JVM.dll文件．装入工作很简单就是调用Windows API函数：
+	第2步已经找到了JVM的路径，Java通过LoadJavaVM来装入JVM.dll文件．装入工作很简单就是调用Windows API
+函数：
 	LoadLibrary装载JVM.dll动态连接库．然后把JVM.dll中的导出函数JNI_CreateJavaVM和JNI_GetDefaultJavaVMInitArgs挂接到InvocationFunctions变量的
 	CreateJavaVM和GetDefaultJavaVMInitArgs函数指针变量上。JVM.dll的装载工作宣告完成。 
 
@@ -29,56 +31,63 @@ GC基础：
 	1.JAVA内存主要由Perm和Heap组成。
 	2.Perm中主要存放JVM自己的反射对象，比如类对象和方法对象等。
 	3.Heap又分为Old区和Yong区。Yong区又分为Eden和两个Survivor Spaces(from,to)。
-Eden用来存放新生的对象。survivor用来存放Yong区中每次GC过后存活下来的对象。Old区主要存放应用程序中生命周期长的内存对象。
+Eden用来存放新生的对象。survivor用来存放Yong区中每次GC过后存活下来的对象。Old区主要存放应用程序中生命
+周期长的内存对象。
 
 
 
 垃圾回收描述：
-	在Yong区中垃圾回收一般用Copying的算法，速度快。每次GC存活下来的对象首先由Eden拷贝到某个SurvivorSpace，
-当SurvivorSpace空间满了后，剩下的live对象直接拷贝到Old区中去。因此，每次GC后，Eden内存块会被清空。在Old区
-块中，垃圾回收一般用mark-compact的算法，速度慢些，但是减少内存要求。
-	垃圾回收分多级，0级为全部回收，会回收Old段中的垃圾；1级或以上为部分垃圾回收，只会回收New中的垃圾，内存溢出通常发生于
-Old段或Perm段垃圾回收后，仍然无内存空间容纳新的Java对象的情况。 
+	在Yong区中垃圾回收一般用Copying的算法，速度快。每次GC存活下来的对象首先由Eden拷贝到某个
+SurvivorSpace，当SurvivorSpace空间满了后，剩下的live对象直接拷贝到Old区中去。因此，每次GC后，Eden
+内存块会被清空。在Old区块中，垃圾回收一般用mark-compact的算法，速度慢些，但是减少内存要求。
+	垃圾回收分多级，0级为全部回收，会回收Old段中的垃圾；1级或以上为部分垃圾回收，只会回收New中的垃圾，
+内存溢出通常发生于Old段或Perm段垃圾回收后，仍然无内存空间容纳新的Java对象的情况。 
 
 
 当一个URL被访问时，内存申请的过程如下：
 	A.JVM会试图为相关的JAVA对象在Eden中初始化一块内存区域
 	B.当Eden空间足够时，内存申请结束。否则到下一步
 	C.JVM试图释放在Eden中所有不活跃的对象(1级或更高级的垃圾回收)，释放后若Eden空间仍然不足以放入新对象，则试图将部分Eden中活跃对象放入Survivor区
-	D.Survivor区被用来作为Eden及Old区的中间交换区域，当Old区空间足够时，Survivor区的对象会被移到Old区，否则会被保留在Survivor区
+	D.Survivor区被用来作为Eden及Old区的中间交换区域，当Old区空间足够时，Survivor区的对象会被移到Old区，
+否则会被保留在Survivor区
 	E.当Old区空间不够时，JVM会在Old区进行完全的垃圾收集(0级)
-	F.完全垃圾收集后，若Survivor及Old区仍然无法存放从Eden复制过来的部分对象，导致JVM无法再Eden区为新对象创建内存区域，
-则出现“out of memory错误”。
+	F.完全垃圾收集后，若Survivor及Old区仍然无法存放从Eden复制过来的部分对象，导致JVM无法再Eden区为新对
+象创建内存区域，则出现“out of memory错误”。
 
 
 
- 年轻代:
-    所有新生成的对象首先都是放在年轻代的。年轻代的目标就是尽可能快速的收集掉那些生命周期短的对象。年轻代分三个区。
- 一个Eden区，两个Survivor区(一般而言)。大部分对象在Eden区中生成。当Eden区满时，还存活的对象将被复制到Survivor区（两个中的一个），
- 当这个Survivor区满时，此区的存活对象将被复制到另外一个Survivor区，当这个Survivor区也满了的时候，从第一个Survivor区复制过来的并且
- 此时还存活的对象，将被复制“年老区(Tenured)”。需要注意，Survivor的两个区是对称的，没先后关系，所以同一个区中可能同时存在从Eden复制
- 过来 对象，和从前一个Survivor复制过来的对象，而复制到年老区的只有从第一个Survivor去过来的对象。而且，Survivor区总有一个是空的。
- 同时，根据程序需要，Survivor区是可以配置为多个的（多于两个），这样可以增加对象在年轻代中的存在时间，减少被放到年老代的可能。
+年轻代:
+   所有新生成的对象首先都是放在年轻代的。年轻代的目标就是尽可能快速的收集掉那些生命周期短的对象。年
+轻代分三个区。一个Eden区，两个Survivor区(一般而言)。大部分对象在Eden区中生成。当Eden区满时，还存活的
+对象将被复制到Survivor区（两个中的一个），当这个Survivor区满时，此区的存活对象将被复制到另外一个
+Survivor区，当这个Survivor区也满了的时候，从第一个Survivor区复制过来的并且此时还存活的对象，将被复
+制“年老区(Tenured)”。需要注意，Survivor的两个区是对称的，没先后关系，所以同一个区中可能同时存在从Eden
+复制过来对象，和从前一个Survivor复制过来的对象，而复制到年老区的只有从第一个Survivor去过来的对象。而且，
+Survivor区总有一个是空的。同时，根据程序需要，Survivor区是可以配置为多个的（多于两个），这样可以增加对
+象在年轻代中的存在时间，减少被放到年老代的可能。
 
 年老代:
-    在年轻代中经历了N次垃圾回收后仍然存活的对象，就会被放到年老代中。因此，可以认为年老代中存放的都是一些生命周期较长的对象。
+    在年轻代中经历了N次垃圾回收后仍然存活的对象，就会被放到年老代中。因此，可以认为年老代中存放的都是
+一些生命周期较长的对象。
 
 持久代:
-
-    用于存放静态文件，如今Java类、方法等。持久代对垃圾回收没有显著影响，但是有些应用可能动态生成或者调用一些class，例如Hibernate
-等，在这种时候需要设置一个比较大的持久代空间来存放这些运行过程中新增的类。持久代大小通过-XX:MaxPermSize=<N>进行设置。
+    用于存放静态文件，如今Java类、方法等。持久代对垃圾回收没有显著影响，但是有些应用可能动态生成或者
+调用一些class，例如Hibernate等，在这种时候需要设置一个比较大的持久代空间来存放这些运行过程中新增的类。
+持久代大小通过-XX:MaxPermSize=<N>进行设置。
 
 
 
 Scavenge GC
     一般情况下，当新对象生成，并且在Eden申请空间失败时，就会触发Scavenge 
-GC，对Eden区域进行GC，清除非存活对象，并且把尚且存活的对象移动到Survivor区。然后整理Survivor的两个区。这种方式的GC
-是对年轻代的Eden区进行，不会影响到年老代。因为大部分对象都是从Eden区开始
-的，同时Eden区不会分配的很大，所以Eden区的GC会频繁进行。因而，一般在这里需要使用速度快、效率高的算法，使Eden去能尽快空闲出来。
+GC，对Eden区域进行GC，清除非存活对象，并且把尚且存活的对象移动到Survivor区。然后整理Survivor的两个
+区。这种方式的GC是对年轻代的Eden区进行，不会影响到年老代。因为大部分对象都是从Eden区开始的，同时Eden
+区不会分配的很大，所以Eden区的GC会频繁进行。因而，一般在这里需要使用速度快、效率高的算法，使Eden去能
+尽快空闲出来。
 
 Full GC
-    对整个堆进行整理，包括Young、Tenured和Perm。Full GC因为需要对整个对进行回收，所以比Scavenge GC要慢，因此应该尽可能减少
-Full GC的次数。在对JVM调优的过程中，很大一部分工作就是对于FullGC的调节。有如下原因可能导致Full GC：
+    对整个堆进行整理，包括Young、Tenured和Perm。Full GC因为需要对整个对进行回收，所以比Scavenge GC
+要慢，因此应该尽可能减少Full GC的次数。在对JVM调优的过程中，很大一部分工作就是对于FullGC的调节。有
+如下原因可能导致Full GC：
     · 年老代（Tenured）被写满
     · 持久代（Perm）被写满 
     · System.gc()被显示调用 
