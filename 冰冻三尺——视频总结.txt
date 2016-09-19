@@ -1,0 +1,37 @@
+1.mybatis
+	分页助手：PageHelper。groupId:com.github.pagehelper;  artifactId：pagehelper;
+	通用mapper：方便单表的增删改查。groupId:com.github.abel533; artifactId: mapper;
+
+
+2.对资源的操作
+	http://example.com/users/
+	-GET: 获取一个资源
+	-POST: 创建一个新的资源
+	-PUT: 修改一个资源的状态
+	-DELETE: 删除一个资源
+	注意：默认PUT和DELETE无法提交表单数据，需要加一个Spring的过滤器。
+	
+
+3.资源的展现方式：xml，json.....
+
+4.http响应状态码
+	CODE	HTTP Operation		 Body Contents	  Description
+	200 	  GET,PUT				资源 			操作成功
+	201		  POST				资源，元数据	对象创建成功
+	202		  POST,PUT,DELETE		N/A  		请求已经被接受
+	204		  DELETE,PUT,PATCH		N/A 		操作已经执行成功，但是没有返回数据
+	301		  GET					link		资源已被移除
+	303		  GET					link		重定向
+	304		  GET					N/A 		资源没有被修改
+	400		  GET,POST,PUT,DELETE   错误提示	参数列表错误
+	401		  GET,POST,PUT,DELETE   错误提示	未授权
+	403		  GET,POST,PUT,DELETE   错误提示	访问受限，授权过期
+	404		  GET,POST,PUT,DELETE   错误提示	资源，服务未找到
+	405		  GET,POST,PUT,DELETE   错误提示	不允许的http方法
+	409		  GET,POST,PUT,DELETE   错误提示	资源冲突，或者资源被锁定
+	415		  GET,POST,PUT,DELETE   错误提示	不支持的数据(媒体)类型
+	429		  GET,POST,PUT,DELETE   错误提示	请求过多被限制
+	500		  GET,POST,PUT,DELETE   错误提示	服务器内部错误
+	501		  GET,POST,PUT,DELETE   错误提示	接口未实现
+	
+

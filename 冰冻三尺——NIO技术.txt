@@ -1,5 +1,5 @@
 网址：http://ifeve.com/overview/
-NIO服务器端编程示例：http://ifeve.com/netty-2-3-4/
+NIO服务器端编程示例：http://ifeve.com/netty-2-3-2/ 
 NIO客户端编程示例：http://ifeve.com/netty-2-3-4/
 Java NIO框架Mina、Netty
 
@@ -76,7 +76,7 @@ Selector
 	4.Selector
 	5.附加信息
 
-	interest集合
+interest集合
 	interest集合是你所选择的感兴趣的事件集合。可以通过SelectionKey读写interest集合，像这样：
 		int interestSet = selectionKey.interestOps();
 		boolean isInterestedAccept = (interestSet & SelectionKey.OP_ACCEPT) == SelectionKey.OP_ACCEPT;
