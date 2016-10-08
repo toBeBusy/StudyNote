@@ -1,0 +1,6 @@
+1.Java和JavaScript中，&&的运算优先级高于||。
+	System.out.println(false && true || true);    
+	System.out.println(true || true && false);
+两句代码的返回值都是true。
+所以，尽量使用括号，而不是代码的优先级来决定代码的执行顺序，不然能坑死你。。。
+

@@ -1,0 +1,76 @@
+JVM参数设置，分析：http://www.cnblogs.com/redcreen/archive/2011/05/04/2037057.html
+JVM参数详解：http://www.cnblogs.com/chengxin1982/p/3949008.html
+
+1.年轻代GC：
+	Serial收集器，历史最悠久的收集器，是一个单线程的收集器，它在工作时必须暂停所有的工作线程，
+直到它收集结束。"Stop The World" 。虽然历史悠久而且存在STW问题，但是serial收集器仍然是虚拟机
+在client模式下的默认新生代收集器。因为它简单而且高效。对于桌面应用的场景中，分配给虚拟机管理
+的内存一般来说不会很大，收集几十兆甚至几百兆的新生代，停顿时间完全可以控制在几十毫秒最多一百
+多毫秒以内，只要不是频繁发生，仍然是可以接受的。
+
+	ParNew收集器，PraNew是Serial的多线程版本。除了使用多线程进行垃圾收集之外，其余行为跟Serial
+完全一样，在实现上，这两种收集器也共用了相当多的代码。PraNew是许多运行在Server模式下的虚拟机中
+首选的新生代收集器，其中有一个与性能无关的重要原因是，它能与CMS收集器配合工作。
+
+	CMS收集器是HotSpot虚拟机中第一款真正意义上的并发收集器，它第一次实现了让垃圾收集线程与用户
+线程同时工作。但是CMS收集器不能与新生代收集器Parallel Scavenge配合工作，所以，在使用CMS来收集
+老年代的时候，新生代只能选择ParNew或者Serial收集器中的一个。
+
+	Parallel Scavenge收集器是一个新生代收集器。使用复制算法，多线程。它与ParNew收集器的不同之处
+是，它可以控制吞吐量。
+
+2.老年代GC:
+	Serial Old收集器是Serial收集器的老年代版本，它同样是一个单线程收集器。
+
+	Parallel Old收集器，Parallel Scavenge收集器的老年代版本。
+
+	CMS收集器。
+
+前沿技术：G1收集器。
+
+GC日志：
+	JVM的GC日志的主要参数包括如下几个：
+	-XX:+PrintGC 输出GC日志
+	-XX:+PrintGCDetails 输出GC的详细日志
+	-XX:+PrintGCTimeStamps 输出GC的时间戳（以基准时间的形式）
+	-XX:+PrintGCDateStamps 输出GC的时间戳（以日期的形式，如 2013-05-04T21:53:59.234+0800）
+	-XX:+PrintHeapAtGC 在进行GC的前后打印出堆的信息
+	-Xloggc:../logs/gc.log 日志文件的输出路径
+
+
+	日志内容：5.617: [GC 5.617: [ParNew: 43296K->7006K(47808K), 0.0136826 secs] 44992K->8702K(252608K), 
+0.0137904 secs] [Times: user=0.03 sys=0.00, real=0.02 secs]  
+	日志解读：5.617（时间戳）: [GC（Young GC） 5.617（时间戳）: [ParNew（使用ParNew作为年轻代的
+垃圾回收期）: 43296K（年轻代垃圾回收前的大小）->7006K（年轻代垃圾回收以后的大小）(47808K)（年轻
+代的总大小）, 0.0136826 secs（回收时间）] 44992K（堆区垃圾回收前的大小）->8702K（堆区垃圾回收后
+的大小）(252608K)（堆区总大小）, 0.0137904 secs（回收时间）] [Times: user=0.03（Young GC用户耗时）
+sys=0.00（Young GC系统耗时）, real=0.02 secs（Young GC实际耗时）]
+
+收集器类型对应的日志记录内容：
+收集器类型        日志内容
+Serival				DefNew
+ParNew 				ParNew
+Parallel Scavenge 	PSYoungGen
+
+
+
+
+JVM【-client】
+默认 -client启动 垃圾收集器默认组合方式为
+新生代：Serial串行GC  (新生代使用-XX:+UseSerialGC收集器)
+年老代和持久代：Serial Old 串行GC
+
+JVM 【-server】
+-server 启动 垃圾收集器默认组合方式为
+新生代：Parallel Scavenge 并行回收GC
+年老代和持久代：Parallel Old并行GC
+Parallel Scavenge的三个个重要参数：
+MaxGCPauseMillis：设置一个大于0的毫秒数，收集器将尽可能地保证内存回收花费的时间不超过设定的值。
+但是GC停顿时间缩短是以牺牲吞吐量和新生代空间来换取的。
+GCTimeRatio：设置一个大于0小于100的整数，即垃圾收集时间占总时间的比率，相当于吞吐量的倒数。
+如果设置为19，那允许的最大GC时间就占总时间的5%（1/(1+19)）。默认值为99.
+重要参数：-XXUseAdaptiveSizePolicy.这是一个开关参数，当这个参数打开之后，就不需要手工指定新生
+代的大小(-Xmn)、Eden与Survivor区的比例(-XX:SurvivorRatio)、晋升老年代对象年龄
+(-XX:PretenureThreshold)等细节参数了，虚拟机会根据当前系统运行情况收集性能监控信息，动态调整
+这些参数以提供最合适的停顿时间或者最大的吞吐量。建议开启该开关。
+
