@@ -47,7 +47,8 @@ SurvivorSpace，当SurvivorSpace空间满了后，剩下的live对象直接拷�
 当一个URL被访问时，内存申请的过程如下：
 	A.JVM会试图为相关的JAVA对象在Eden中初始化一块内存区域
 	B.当Eden空间足够时，内存申请结束。否则到下一步
-	C.JVM试图释放在Eden中所有不活跃的对象(1级或更高级的垃圾回收)，释放后若Eden空间仍然不足以放入新对象，则试图将部分Eden中活跃对象放入Survivor区
+	C.JVM试图释放在Eden中所有不活跃的对象(1级或更高级的垃圾回收)，释放后若Eden空间仍然不足以放入新对象，
+则试图将部分Eden中活跃对象放入Survivor区
 	D.Survivor区被用来作为Eden及Old区的中间交换区域，当Old区空间足够时，Survivor区的对象会被移到Old区，
 否则会被保留在Survivor区
 	E.当Old区空间不够时，JVM会在Old区进行完全的垃圾收集(0级)
