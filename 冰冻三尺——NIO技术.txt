@@ -2,7 +2,7 @@
 NIO服务器端编程示例：http://ifeve.com/netty-2-3-2/ 
 NIO客户端编程示例：http://ifeve.com/netty-2-3-4/
 Java NIO框架Mina、Netty
-
+ 
 1.Channel
 	基本上所有的IO在NIO中都是从一个Channel开始的，Channel有点像IO里的流。数据可以从Channel读到Buffer中
 也可以从Buffer写到Channel中。常见的Channel类型：FileChannel，DatagramChannel，SocketChannel，ServerSocketChannel。

@@ -73,3 +73,8 @@ value赋值为123的动作将在初始化阶段才会执行。
 
 
 
+
+	Class.getClassLoader()和Thread.currentThread.getContextClassLoader()的区别。
+	1.Class.getClassLoader()这个获取的是Class这个类的类加载器。
+	2.Thread.currentThread.getContextClassLoader()获取的是当前线程指定的类加载器。我们可以通过
+Thread.currentThread.setContextClassLoader()可以为当前线程指定相应的ClassLoader。
