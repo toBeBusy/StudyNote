@@ -1,0 +1,126 @@
+1.坐标详解
+	Maven坐标是通过一些元素定义的，它们是：groupId，artifactId，version，packaging，
+classifier。先看一组坐标定义，如下：
+	<groupId>org.sonatype.nexus</groupId>
+	<artifactId>nexus-indexer</artifactId>
+	<version>2.0.0</version>
+	<packaging>jar</packaging>
+
+	各个标签的定义：
+	(1)groupId:定义当前Maven项目隶属的实际项目。首先Maven项目和实际项目不一定是一对
+一的关系。比如SpringFramework这一实际项目，其对应的Maven项目会有很多，如spring-core,
+spring-context等。这是由于Maven中模块的概念，因此，一个实际项目往往会被划分成很多模
+块。其次，groupId不应该对应项目隶属的组织或公司。原因很简单，一个组织下面会有很多实际项目，如果groupId只定义到组织级别，后面我们会看到，artifactId只能定义Maven项目，那
+么实际项目这个层将难以定义。
+	(2)artifactId:该元素定义实际项目中的一个Maven项目(模块)，推荐做法是使用实际项目
+名称作为artifactId的前缀。
+	(3)version:该元素定义Maven项目当前所处的版本。
+	(4)packaging:该元素定义Maven项目的打包方式。首先，打包方式通常与所生成构件的文件
+扩展名对应，如上例中packaging为jar，最终文件名为nexus-indexer-2.0.0.jar，而使用war
+打包方式的项目，最终生成的构件会有一个.war文件。
+	(5)classifier:该元素用来帮助定义构建输出的一些附属构件。
+	上述5个元素中，groupId,artifactId,version是必须定义的，packaging是可选的(默认为
+jar),而classifier是不能直接定义的。
+
+2.依赖的配置(dependency标签详解)：
+	groupId,artifactId,version:依赖的基本坐标。
+	type:依赖的类型，对应于项目坐标定义的packaging。默认值为jar。
+	scope：依赖范围。
+		compile：编译依赖范围。如果没有指定，就会默认使用该依赖范围。使用该依赖范围
+				 的Maven依赖，在编译，测试，运行三种classpath都有效。
+		test:测试依赖范围。只对测试classpath有效，在编译主代码或者运行项目的时候将无
+			 法使用此依赖。
+		provided：已提供依赖范围。使用此依赖范围的Maven依赖，对于编译和测试classpath
+				  有效，但在运行时无效。典型的例子是servlet-api，在编译和测试项目的
+				  时候需要该依赖，但在运行项目时，由于容器已经提供，就不需要Maven重
+				  复地引入一遍。
+		runtime：运行时依赖范围。使用此依赖范围的Maven依赖，对于测试和运行classpath
+				 有效，但在编译主代码时无效。典型的例子是JDBC驱动实现，项目主代码的
+				 编译只需要JDK提供的JDBC接口，只有在执行测试或者运行项目的时候才需要
+				 实现上述接口的具体JDBC驱动。
+		system：系统依赖范围。该依赖与三种classpath的关系，和provided依赖范围完全一
+				致。但是，使用system范围的依赖时必须通过systemPath元素显示地指定依赖
+				文件的路径。
+		import: 导入依赖范围。该依赖范围不会对三种classpath产生实际的影响。
+	optional：标记依赖是否可选。默认false。
+	exclusions：用来排除传递性依赖，
+
+
+3.依赖传递：项目A compile依赖项目B，项目B compile依赖项目C。那么项目A compile依赖
+项目C。
+
+4.依赖调解：
+	Maven依赖调解的原则：1.路径最近者优先。
+						 2.第一声明者优先。
+	例：如果A->B->C->X(1.0)；A->D->X(2.0)。可以看出X是A的传递性依赖，但是两条依赖路
+径上有两个版本的X，那么哪个X会被Maven解析使用呢？根据第一原则，X(1.0)的路径长度为3，
+而X(2.0)的路径长度为2，因此X(2.0)会被解析使用。
+	如果X(1.0)和X(2.0)的路径长度相同，那么根据第二原则：第一声明者优先。在依赖路径长
+度相等的前提下，在POM文件中依赖声明的顺序决定了谁会被解析使用，顺序最靠前的那个依赖
+优胜。
+
+5.可选依赖(optional)：感觉没什么用，用到再查吧。
+	
+6.排除依赖：传递性依赖会给项目隐式地引入很多依赖，这极大地简化了项目依赖的管理，但是
+有些时候这种特性也会带来问题。当你不需要某个隐式依赖时，可以使用排除依赖标签
+<exclusion>来排除该依赖。例：
+	<dependency>
+		<groupId>com.test</groupId>
+		<artifactId>project-a</artifactId>
+		<version>1.0.0</version>
+		<exclusions>
+			<exclusion>
+				<groupId>com.test</groupId>
+				<artifactId>project-b</artifactId>
+				<version>1.0.0</version>
+			</exclusion>
+		</exclusions>
+	</dependency>
+
+
+7.归类依赖：提取相同的版本号。例：
+	<properties>
+		<springframework>2.5.6</springframework>
+	</properties>
+
+8.本地仓库：默认情况下，不管是在Windows还是Linux上，每个用户在自己的用户目录下都有一
+个路径名为.m2/repository/的仓库目录。可以通过修改settings.xml文件来重新设置本地仓库
+的位置。
+
+9.远程仓库：当用户需要的依赖在本地仓库不存在时，maven会通过Internet从远程仓库下载至
+本地仓库。每个用户只要一个本地仓库，但可以配置访问很多远程仓库。
+
+10.私服：私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，供局域网内的Maven用
+户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部远
+程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。
+
+
+11远程仓库要在POM文件中配置。例：
+	<repositories>
+		<repository>
+			<id>jboss</id>
+			<name>JBoss Repository</name>
+			<url>http://repository.jboss.com/maven2/</url>
+			<releases>
+				<enabled
+			</releases>
+		</reponsitory>
+	</repositories>
+
+12.远程仓库认证:有的远程仓库需要认证,在settings.xml文件中增加如下配置id需要与pom文件
+中仓库的id相同。
+	<servers>
+		<server>
+			<id>my-proj</id>
+			<username>repo-user</username>
+			<password>repo-pwd</password>
+		</server>
+	</servers>
+
+13.部署至远程仓库：Maven还能将项目生成的构建部署到仓库中。需要在pom文件中配置
+distributionManagement元素。distributionManageement包含repository和shapshotRepository子元素，前者表示发布版本构件的仓库，后者表示快照版本的仓库。注意id要与远程仓库的id相同。部署命令：mvn clean deploy。
+
+14.镜像：如果仓库X可以提供仓库Y存储的所有内容，那么就可以认为X是Y的一个镜像。国内
+由于地理位置原因，经常使用镜像来代替中央仓库。
+
+
