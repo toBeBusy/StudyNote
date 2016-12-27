@@ -10,7 +10,8 @@ classifier。先看一组坐标定义，如下：
 	(1)groupId:定义当前Maven项目隶属的实际项目。首先Maven项目和实际项目不一定是一对
 一的关系。比如SpringFramework这一实际项目，其对应的Maven项目会有很多，如spring-core,
 spring-context等。这是由于Maven中模块的概念，因此，一个实际项目往往会被划分成很多模
-块。其次，groupId不应该对应项目隶属的组织或公司。原因很简单，一个组织下面会有很多实际项目，如果groupId只定义到组织级别，后面我们会看到，artifactId只能定义Maven项目，那
+块。其次，groupId不应该对应项目隶属的组织或公司。原因很简单，一个组织下面会有很多实
+际项目，如果groupId只定义到组织级别，后面我们会看到，artifactId只能定义Maven项目，那
 么实际项目这个层将难以定义。
 	(2)artifactId:该元素定义实际项目中的一个Maven项目(模块)，推荐做法是使用实际项目
 名称作为artifactId的前缀。
@@ -124,3 +125,4 @@ distributionManagement元素。distributionManageement包含repository和shapsho
 由于地理位置原因，经常使用镜像来代替中央仓库。
 
 
+ 
