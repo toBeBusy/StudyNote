@@ -1,0 +1,160 @@
+1.SpringMVC使用步骤：
+	1) 加入jar包
+	2) 在web.xml中配置DispatherServlet
+	3) 加入SpringMVC的配置文件
+	4) 编写处理请求的处理器，并标识为处理器
+	5) 编写视图
+
+	2.配置的DispatcherServlet会默认加载/WEB-INF/<servletName-servlet>.xml下的Spring配置文件
+来启东WEB层的Spring容器。也可以通过为web.xml中的servlet元素配置contextConfigLocation初始化
+参数自定义配置文件的位置和名称。
+	DispatcherServlet截获请求后，就通过控制器上@RequestMapping提供的映射信息确定请求所对应的
+处理方法。
+
+	3.编写SpringMVC配置文件：
+	1) 配置自动扫描的包(让请求进入控制器和处理器)
+	<context:component-scan base-package="com.atguigu.springmvc">
+	</context:component-scan>
+	2) 配置视图解析器，将视图逻辑名解析为:/WEB-INF/pages/<viewName>.jsp
+	<bean class="org.springframework,web.servlelet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/pages/"></property>
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+
+	4.创建控制器和处理器
+
+	5.springMVC工作流程描述
+	1) 用户向服务器发送请求，请求被Spring前端控制器DispatcherServlet捕获；
+	2) DispatcherServlet对URL请求进行解析，得到请求资源标识符(URI)，然后根据该URI，调用
+HandlerMapping获得该Handler配置的所有相关的对象(包括Handler对象以及Handler对象对应的拦截器)
+最后以HandlerExecutionChain对象的形式返回；
+	3) DispatcherServlet根据获得的Handler，选择一个合适的HandlerAdapter。(附注：如果成功获得
+HandlerAdapter后，此时将开始执行拦截器的preHandler(...)方法)；
+	4) 提取Request中的模型数据，填充Handler入参，开始执行Handler(Controller)。在填充Handler
+的入参过程中，根据你的配置，Spring将帮你做一些额外的工作；
+	   HttpMessageConveter：将请求消息(如Json、xml等数据)转换成一个对象，将对象转换为指定的
+	响应信息
+	   数据转换： 对请求消息进行数据转换。如String转换成Integer，Double等
+	   数据格式化：对请求消息进行数据格式化。如将字符串转换成格式化数字或格式化日期等
+	   数据验证：验证数据的有效性(长度、格式等)，验证结果存储到BindingResult或Error中
+	5) Handler执行完成后，向DispatcherServlet返回一个ModelAndView对象；
+	6) 根据返回的ModelAndView，选择一个合适的ViewResolver(必须是已经注册到Spring容器中的
+ViewResolver)返回给DispatcherServlet；
+	7) ViewResolver结合Model和View，来渲染视图；
+	8) 将渲染结果返回给客户端。
+
+	6.@RequestMapping注解
+	作用：SpringMVC使用@RequestMapping注解为控制器指定可以处理哪些URL请求使用位置：
+		在控制器(controller)的类定义及方法定义处都可以标注@RequestMapping
+		1) 类定义处：提供初步的请求映射信息。相对于WEB应用的根目录
+		2) 方法处：提供进一步的细分映射信息。相对于类定义处的URL。若类定义处未标注@RequestMa
+	pping，则方法处标记的URL相对于WEB应用的根目录
+	使用方法：
+		@RequestMapping除了可以使用请求URL映射请求外，还可以使用请求方法、请求参数、请求
+	    头映射请求。value、method、params及heads等参数分别表示请求URL、请求方法、请求参数、请求头的映射条件。
+	params和headers用法：
+		param1：表示请求必须包含名为param1的请求参数；
+		!param1：表示请求不能包含名为param1的请求参数；
+		param1 != value1：表示请求包含名为param1的请求参数，但其值不能为value1；
+		{"param1=value1","param2"}:请求必须包含名为param1和param2的两个请求参数，且param1参
+	数的值必须为value1。
+	RequestMapping映射请求支持Ant风格的URL：
+	Ant风格的资源地址3种匹配符：
+		?:匹配文件名中的一个字符
+		*:匹配文件名中的任意字符
+		**:**匹配多层路径
+		例：
+		/user/*/createUser:匹配/user/aaa/createUser、/user/bbb/createUser等URL;
+		/user/**/createUser:匹配/user/createUser、/user/aaa/bbb/createUser等URL;
+		/user/createUser??:匹配/user/createUseraa、/user/createUserbb等URL;
+
+	7.@PathVariable注解
+	作用：通过@PathVariable注解可以将URL中占位符参数绑定到控制器处理方法的入参中；URL中的
+{xxx}占位符可以通过@PathVariable("xxx")绑定到操作方法的入参中
+	使用方法：
+	@RequestMapping("/delete/{id}")
+	public String delete(@PathVariable("id") Integer id){
+		UserDao.delete(id);
+		return "redirect:/user/list.action";
+	}
+
+	8.HiddenHttpMethodFilter作用
+	浏览器form表单只支持GET与POST请求，而DELETE、PUT等method并不支持，Spring3.0添加了一个
+过滤器，可以将这些请求转换为标准的http方法，使得支持GET、POST、PUT与DELETE请求。
+
+	9.@RequestParam注解（映射请求参数）
+	作用：在处理方法入参处使用@RequestParam可以把请求参数传递给请求方法
+	参数：
+		value：参数名
+		required：是否必须。默认为true，表示请求参数中必须包含对应的参数，若不存在，将抛出
+异常。
+	
+	10.@RequestHeader和@CookieValue使用方法和@RequestParamore类似。@CookieValue可以让处理
+方法入参绑定某个Cookie值。
+
+	11.使用POJO对象绑定请求参数值
+	作用：SpringMVC会按请求参数名和POJO属性名进行自动匹配，自动为该对象填充属性值。
+		支持级联属性，如：dept.deptId、dept.address.tel等。
+	使用方法：
+		@RequestMapping("/handle8")
+		public String handle8(User user){
+			return "success";
+		}
+
+	12.SpringMVC的Handler方法可以接受哪些ServletAPI类型的参数？
+	HttpServletRequest、HttpServletResponse、HttpSession、java.security.Principal、Locale
+InputStream、OutputStream、Reader、Writer。例：
+	@RequestMapping("/testServletAPI")
+	public void testServletAPI(HttpServletRequest request, HttpServletResponse response, Writer out) throws IOException {
+		System.out.println("testServletAPI," + request + "," + response);
+		out.write("hello springmvc");
+	}
+
+	13.处理模型数据
+	SpringMVC提供了以下几种途径输出模型数据：
+	(1) ModelAndView：处理方法返回值类型为ModelAndView时，方法体即可通过该对象添加模型
+数据：
+	控制器吃力方法的返回值如果为ModelAndView，则其既包含视图信息，也包含模型数据信息。
+	添加模型数据方法：
+	ModelAndView addObject(String attributeName, Object attributeValue)
+	ModelAndView addAllObject(Map<String,?> modelMap)
+	设置视图方法：
+	void setView(View view)
+	void setViewName(String viewName)
+	范例：
+	@RequestMapping("/testModelAndView")
+	public ModelAndView testModelAndView(){
+		String viewName = SUCCESS;
+		ModelAndView modelAndView = new ModelAndView(viewName);
+
+		//添加模型数据到ModelAndView中。
+		modelAndView.addObject("time", new Date());
+
+		return modelAndView;
+	}
+	总结：目标方法的返回值可以使用ModelAndView类型，其中可以包含视图和模型信息。SpringMVC会
+把ModelAndView的model中数据放入到request域对象中。
+	(2)Map及Model：入参为org.springframework.ui.Model、org.springframework.ui.ModelMap或
+java.util.Map时，处理方法返回时，Map中的数据会自动添加到模型中；
+	SpringMVC在内部使用了一个org.springframework.ui.Model接口存储模型数据。
+	具体步骤：
+	SpringMVC在调用方法前会创建一个隐含的模型对象作为模型数据的存储容器。如果方法的入参为
+Map或Model类型，SpringMVC会将隐含模型的引用传递给这些入参。在方法体内，开发者可以通过这个
+入参对象访问到模型中的所有数据，也可以向模型中添加新的属性数据。
+	@ModelAttribute("user")
+	public User getUser(){
+		User user = new User();
+		user.setAge(10);
+
+		return user;
+	}
+
+	@RequestMapping("/handle20")
+	public String handle20(Map<String, Object> map){
+		map.put("time",new Date());
+		User user = (User)map.get("user");
+		user.setEmail("TongGang@atguigu.com");
+
+		return "success";
+	}
+
