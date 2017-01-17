@@ -1,4 +1,4 @@
-﻿使用多线程解决异步发送响应慢的问题
+﻿0使用多线程解决异步发送响应慢的问题
 我们项目的主要工作是调用异步接口向别的模块发送数据。要经过ESB发送，但是ESB经常会发送堵塞的状况。这样就会延长事务提交的时间。
 经理要求我们解决这个问题。我看原来所有的代码都是按一个套路来写的。一开始打算用改变事务的传播方式来让原来的逻辑单独提交，但是这样
 会影响到数据的一致性。
@@ -189,14 +189,15 @@ CountDownLatch不同的是，CyclicBarrier可以通过构造方法指定，当�
 执行exchange方法，它会一直等待第二个线程也执行exchange方法。当两个线程都到达同步点时，两个线程就会交换exchange
 方法里面的参数，将参数作为数据传递给对方。
 
-线程池技术(自己总结的)：
+线程池技术ThreadPoolExecutor(自己总结的)：
 	1.线程池中有两个List类型的成员变量。因为会有多线程操作，所以要保证是线程安全的。其中一个List变量里面保存的是
 用来执行任务的线程，称为workList；另一个变量里面保存的是将要被执行的任务，称为jobList。workList中所有的worker都是一个线程。每个线程挨个从jobList里面取出job并执行期run方法。切记，是执行job的run方法，不是start方法。
 
 	2.若线程池中任务已满，会执行RejectedExecutionHandler接口中的rejectedExecution方法。这个handler可以自己实现，
 默认的实现是抛出一个RejectedExecutionException异常。
 
-
+	3.线程池中的worker执行若出现错误，会运行ThreadPoolExecutor中的afterExecute(Runnable r, Throwable t)方法，该方法默认是没有语句的
+可以继承ThreadPoolExecutor类，并重写该方法。
 
 	阻塞
 	1.在任何时候线程必须停下来等待它没有的资源时，就会发生阻塞。常见的阻塞有阻塞于I/O，阻塞于锁。

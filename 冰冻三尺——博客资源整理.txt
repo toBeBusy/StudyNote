@@ -1,0 +1,2 @@
+Spring事务管理：http://blog.csdn.net/zheng0518/article/details/49206847
+Mybatis教程：http://www.cnblogs.com/bluejoe/p/5115930.html
