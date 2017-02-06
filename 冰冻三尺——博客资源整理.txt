@@ -1,2 +1,5 @@
 Spring事务管理：http://blog.csdn.net/zheng0518/article/details/49206847
 Mybatis教程：http://www.cnblogs.com/bluejoe/p/5115930.html
+分库分表技术：http://www.cnblogs.com/zhongxinWang/p/4262650.html
+			  http://www.cnblogs.com/chy2055/p/5128221.html
+Java内存泄漏分析：http://blog.csdn.net/seelye/article/details/8269705
