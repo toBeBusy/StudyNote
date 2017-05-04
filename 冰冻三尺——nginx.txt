@@ -1,0 +1,108 @@
+server{ 
+	server_name b.ttlsa.com;
+	listen 80;
+	root /data/site/b.ttlsa.com;
+	access_log /data/logs/nginx/b.ttlsa.com-access.log man
+	location / 
+	{
+	}
+}
+配置讲解：
+server{}：配置虚拟主机必须有这个字段。
+server_name：虚拟主机的域名，可以写多个域名，类似于别名，比如说你可以配置成server_name 
+b.ttlsa.com c.ttlsa.com c.ttlsa.com d.ttlsa.com, 这样的话，访问任何一个域名，内容都是
+一样的listen 80，监听ip和端口，这边仅仅只有端口，表示当前服务器所有ip的80端口，如果只
+想监听127.0.0.1的80，写法如下：listen 127.0.0.1:80。
+root /data/site/b.ttlsa.com：站点根目录，你网站文件存放的地方。注：站点目录和域名尽量
+一样，养成一个好习惯。
+access_log /data/logs/nginx/b.ttlsa.com-access.log main：访问日志
+location / {} 默认uri，location具体内容后续讲解
+
+nginx -t 检查nginx配置是否ok，命令如下：
+
+
+nginx location配置
+语法规则：location [=|~|~*|^~] /uri/ {...}
+=	:表示精确匹配，这个优先级也是最高的
+^~	:表示uri以某个常规字符串开头，理解为匹配url路径即可。nginx不对url做编码，因此请求为
+/static/20%/aa，可以被规则^~ /static/ /aa匹配到
+~	:表示区分大小写的正则匹配
+~*	:表示不区分大小写的正则匹配(和上面的唯一区别就是大小写)
+!~和!~*分别为区分大小写不匹配及不区分大小写不匹配的正则
+/	:通用匹配，任何请求都会匹配到，默认匹配。
+
+规则和优先级
+多个location配置的情况下匹配顺序为：
+	优先级=>^~>
+	首先匹配=，其次匹配^~，其次是按文件中顺序的正则匹配，最后是交给/通用匹配。当有匹配成功时，
+停止匹配，按当前匹配规则处理请求。
+	
+
+nginx root&alias文件路径配置
+	nginx指定文件路径有两种方式root和alias.root和alias主要区别在于nginx如何解释location后面
+的uri，这会使两者分别以不同的方式将请求映射到服务器文件上。
+	[root]
+	语法：root path
+	默认值：root html
+	配置段：http，server，location，if
+	
+	[alias]
+	语法：alias path
+	配置段：location
+	例：
+	location ~ ^/weblogs/ {
+		root /data/weblogs/www.ttlsa.com;
+		autoindex on;
+		auth_basic		"Restricted";
+		auth_basic_user_file	passwd/weblogs;
+	}
+	如果一个请求的URL是/weblogs/httplogs/www.ttlsa.com-access.log时，web服务器将会返回服务器
+上的/data/weblogs/www.ttlsa.com/weblogs/httplogs/www.ttlsa.com-access.log的文件。
+	root会根据完整的URI请求来映射，也就是/path/uri。
+	因此，前面的请求映射为path/weblogs/httplogs/www.ttlsa.com-access.log。
+	location ^~ /binapp/ {
+		limit_conn limit 4;
+		limit_rate 200k;
+		internal;
+		alias /data/statics/bin/apps/;
+	}
+	alias会把location后面配置的路径丢弃掉，把当前匹配到的目录指向到指定的目录。如果一个请求的
+URL是/binapp/a.ttlsa.com/favicon时，web服务器将会返回服务器上的/data/statics/bin/apps/
+a.ttlsa.com/favicon.jpg的文件。
+	1.使用alias时，目录名后面一定要加"/"。
+	2.alias可以指定任何名称。
+	3.alias在使用正则匹配时，必须捕捉要匹配的内容，并在指定的内容处使用。
+	4.alias只能位于location块中。
+	
+	
+nginx日志配置
+	日志对于统计排错来说非常有利。本文总结了nginx日志相关的配置如access_log，log_format，
+open_log_file_cache，log_not_found，log_subrequest，rewrite_log，error_log。
+	nginx有一个非常灵活的日志记录模式。每个级别的配置可以有各自独立的访问日志。日志格式通过
+log_format命令来定义。ngx_http_log_module是用来定义请求日志格式的。
+
+1.access_log指令
+	语法：access_log path [format [buffer=size [flush=time]]];
+	access_log path format gzip[=level] [buffer=size] [flush=time];
+	access_log syslog:server=address[,parameter=value] [format];
+	access_log off;
+	默认值：access_log logs/access.log combined;
+	配置段：http,server,location,if in location, limit_except
+	gzip压缩等级。
+	buffer设置内存缓存区大小。
+	flush保存在缓存区中的最长时间。
+	不记录日志:access_log off;
+	使用默认combined格式记录日志：access_log logs/access.log 或 access_log logs/access.log 
+combined;
+2.log_format指令
+	语法：log_format name string ...;
+	默认值：log_format combined "...";
+	配置段：http
+	name表示格式名称，string表示等义的格式。log_format有一个默认的无需设置的combined日志
+格式，相当于apache的combine日志格式，如下所示：
+	log_format combined  '$remote_addr - $remote_user [$time_local]'
+						 '"$request" $status $body_bytes_sent'
+						 '"$http_referer" "$http_user_agent"';
+	
+	
+	
