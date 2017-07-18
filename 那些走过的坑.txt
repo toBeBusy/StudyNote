@@ -1,3 +1,5 @@
 1.将文件转正字符流用Base64编码之后保存到数据库。
 
 2.用nginx做代理，可以屏蔽客户端的ip，通过服务器来发送请求。解决IP白名单问题。
+
+3.Java中数字签名RSASignature算法的使用,包括生成key,加密,解密。http://blog.csdn.net/cheng9981/article/details/52825554
