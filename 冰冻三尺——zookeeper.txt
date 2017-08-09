@@ -1,126 +1,126 @@
-ZookeeperӦ�ó�����
+Zookeeper应用场景：
 http://www.cnblogs.com/sharpxiajun/archive/2013/06/02/3113923.html
 http://www.cnblogs.com/tommyli/p/3766189.html
 
 
 
-1.Zookeeper��ʲô��
-	Zookeeper��һ�����͵ķֲ�ʽ����һ���ԵĽ���������ֲ�ʽ������Ի�����ʵ���������ݷ���/
-���ġ����ؾ��⡢�������񡢷ֲ�ʽЭ��֪ͨ����Ⱥ������masterѡ�١��ֲ�ʽ�����ֲ�ʽ���еȹ��ܡ�
-Zookeeper���Ա�֤���·ֲ�ʽһ�������ԡ�
-	1)˳��һ���ԣ���ͬһ���ͻ��˷���������������ս��ϸ����䷢��˳��Ӧ�õ�Zookeeper�С�
-	2)ԭ���ԣ����²���Ҫô�ɹ�Ҫôʧ�ܣ�û���м�״̬��
-	3)��һ��ͼ�����ܿͻ���������һ�����������ͻ��˿�������˵�����ģ�Ͷ���һ�µġ�
-	4)�ɿ��ԣ�һ��һ�����³ɹ�����ô���ͻᱻ�־û���ֱ���ͻ������µĸ��¸���������¡�
-	5)ʵʱ�ԣ�Zookeeper����֤��һ��ʱ���ڣ��ͻ�������һ���ܹ��ӷ���˶������µ�����״̬��
+1.Zookeeper是什么：
+	Zookeeper是一个典型的分布式数据一致性的解决方案，分布式程序可以基于它实现诸如数据发布/
+订阅、负载均衡、命名服务、分布式协调通知、集群管理、master选举、分布式锁、分布式队列等功能。
+Zookeeper可以保证如下分布式一致性特性。
+	1)顺序一致性：从同一个客户端发起的事务请求，最终将严格按照其发起顺序被应用到Zookeeper中。
+	2)原子性：更新操作要么成功要么失败，没有中间状态。
+	3)单一视图：不管客户端连接哪一个服务器，客户端看到服务端的数据模型都是一致的。
+	4)可靠性：一旦一个更新成功，那么它就会被持久化，直到客户端用新的更新覆盖这个更新。
+	5)实时性：Zookeeper仅保证在一定时间内，客户端最终一定能够从服务端读到最新的数据状态。
 	
-2.Zookeeper���Ŀ��
-	�򵥵�����ģ�ͣ�
-	Zookeeperʹ�÷ֲ�ʽ�����ܹ�ͨ��һ�������ġ����νṹ�����ֿռ��������໥Э��������������
-���ļ�ϵͳ��Ŀ¼���ͽṹ������ģ�͡�Э���������ڴ������ر����׳�������������������������
-Zookeeper�Ķ�����Ϊ�˼���ֲ�ʽӦ��ʵ��Э������ĸ�����Zookeeper�����ֲ�ʽӦ��ͨ�������Ĳ��
-�����ֿռ�����໥Э����Zookeeper���ڴ���ά�����ݣ������Ͼ߱������¡����ӳٵ��ص㡣Zookeeper
-���Ӹ����ܡ��߿��á��ϸ������ȡ����ˣ����ܷ����ܹ�ʤ�δ��ͷֲ�ʽϵͳ���ɿ���������ε����
-�ϣ��ϸ������ȡȷ���ͻ����ܹ�ʵ�ָ��ӵ�ͬ��ԭ�
-	Zookeeper���ֿռ��ɽڵ�znode���ɣ�����֯��ʽ�����ļ�ϵͳ�����и����ڵ��൱��Ŀ¼���ļ���
-ͨ��·����ΪΨһ��ʶ�����ļ�ϵͳ��ͬ���ǣ�ÿ���ڵ������֮��Ӧ���������ݣ�ͬʱҲ���Ծ����ӽ�
-�㡣�ڵ����һ�����ʿ����б�(Access Control List--ACL)��Լ����Щ����ִ����Щ������Zookeeper
-���ڴ洢Э�����ݣ���״̬�����á�λ�õ���Ϣ��ÿ���ڵ�洢����������С��KB���𡣽ڵ�ά��һ��
-stat�ṹ(�������ݱ仯�İ汾�š�ACL�仯��ʱ���)��������������֤��Э�����¡�ÿ���ڵ���������
-�ı䣬�汾�Ż��������ͻ��˻�ȡ���ݵ�ͬʱҲ���ȡ���ݰ汾�š��ڵ������������ԭ�ӷ�ʽ��д����
-������ȡȫ�����ݣ�д�����滻ȫ�����ݡ�Zookeeper��һ�ֽڵ������ʱ�ڵ㣬��ʱ�ڵ���ڴ����ýڵ�
-�ĻỰ�Ĵ���ڼ���ڣ��Ự��������ʱ�ڵ��Զ�ɾ����
+2.Zookeeper设计目标
+	简单的数据模型：
+	Zookeeper使得分布式程序能够通过一个共享的、树形结构的名字空间来进行相互协调。它采用了类
+似文件系统的目录树型结构的数据模型。协调服务难于处理，特别容易出错，比如条件竞争和死锁。
+Zookeeper的动机是为了减轻分布式应用实现协调服务的负担。Zookeeper允许分布式应用通过共享的层次
+化名字空间进行相互协调。Zookeeper在内存中维护数据，访问上具备高吞吐、低延迟的特点。Zookeeper
+重视高性能、高可用、严格有序存取，因此，性能方面能够胜任大型分布式系统，可靠方面可屏蔽单点故
+障，严格有序存取确保客户端能够实现复杂的同步原语。
+	Zookeeper名字空间由节点znode构成，其组织方式类似文件系统。其中各个节点相当于目录和文件，
+通过路径作为唯一标识。与文件系统不同的是，每个节点具有与之对应的数据内容，同时也可以具有子节
+点。节点具有一个访问控制列表(Access Control List--ACL)来约束哪些人能执行哪些操作。Zookeeper
+用于存储协调数据，如状态、配置、位置等信息，每个节点存储的数据量很小，KB级别。节点维护一个
+stat结构(包括数据变化的版本号、ACL变化、时间戳)，以允许缓存验证与协调更新。每当节点数据内容
+改变，版本号会增长。客户端获取数据的同时也会获取数据版本号。节点的数据内容以原子方式读写，读
+操作读取全部内容，写操作替换全部内容。Zookeeper有一种节点叫做临时节点，临时节点仅在创建该节点
+的会话的存活期间存在，会话结束，临时节点自动删除。
 
-	������Ⱥ��
-	һ��Zookeeper��Ⱥͨ����һ�������ɣ�һ����3~5̨�������һ�����õ�Zookeeper��Ⱥ�����
-Zookeeper�ļ�Ⱥ��ÿ̨���������ڴ���ά����ǰ��������״̬������ÿ̨����֮�䶼���ౣ����ͨ�ţ�
-��������ܹ�������������Ⱥ���ܶ����ṩ����Zookeeper��client��ѡ��Ⱥ������һ̨��������TCP
-���ӡ�
+	构建集群：
+	一个Zookeeper集群通常由一组机器组成，一般由3~5台可以组成一个可用的Zookeeper集群，组成
+Zookeeper的集群的每台机器都在内存中维护当前服务器的状态，并且每台机器之间都互相保持着通信，
+过半机器能够正常工作，集群就能对外提供服务。Zookeeper的client会选择集群内任意一台机器创建TCP
+连接。
 
-	˳����ʣ�
-	�������Կͻ��˵�ÿ����������Zookeeper�����һ��ȫ��Ψһ�ĵ�����ţ������ŷ�Ӧ������
-����Ĳ����Ⱥ�˳��Ӧ�ó�����Ի��ڴ�ʵ�ָ��߲�ε�ͬ��ԭ�
+	顺序访问：
+	对于来自客户端的每个更新请求，Zookeeper会分配一个全局唯一的递增编号，这个编号反应了所有
+事物的操作先后顺序，应用程序可以基于此实现更高层次的同步原语。
 
-	�����ܣ�
-	���ݶ����ڴ��д�ţ��ʺ��Զ�Ϊ���ĳ�����
+	高性能：
+	数据都在内存中存放，适合以读为主的场景。
 	
 	
-3.Zookeeper�Ļ������
-	����һЩZookeeper�Ļ��������������Ⱥ��ɫ���Ự�����ݽڵ㡢�汾��watcher��ACLȨ�޿��ơ�
+3.Zookeeper的基本概念：
+	介绍一些Zookeeper的基本概念。包括：集群角色、会话、数据节点、版本、watcher、ACL权限控制。
 
-	��Ⱥ��ɫ��
-	Zookeeper��Ⱥ��һ�������ֽ�ɫ���ֱ��ǣ�Leader��Follower��Observe��Leader������������Zookeeper
-��Ⱥ���������еĺ��ģ�Follower��������Zookeeper��Ⱥ״̬�ĸ����ߣ�Observer�������䵱һ���۲��ߵĽ�ɫ��
+	集群角色：
+	Zookeeper集群中一共有三种角色，分别是：Leader、Follower，Observe。Leader服务器是整个Zookeeper
+集群工作机制中的核心，Follower服务器是Zookeeper集群状态的跟随者，Observer服务器充当一个观察者的角色。
 
-	�Ự��
-	Session�Ự��ָ�ͻ��˻Ự����Zookeeper�У�һ���ͻ���������ָ�ͻ���������֮���һ��TCP���ӣ�
-�ͻ�����������ʱ�����Ȼ������������һ��TCP���ӣ�ͨ��������ӣ��ͻ����ܹ�ͨ������������������
-����Ч�ĻỰ��Ҳ����Zookeeper�������������󲢻����Ӧ��ͬʱ���ܹ�ͨ�������ӽ������Է�������Wather
-�¼�֪ͨ��SessionTimeoutֵ������һ���ͻ��˻Ự�ĳ�ʱʱ�䡣�����ڷ�����ѹ������������ϣ��ͻ��˶�
-���ȸ���ԭ���¿ͻ������ӶϿ�ʱ��ֻҪ��sessionTimeoutֵ��Χ�ڣ���ͻ��˵ĻỰ��Ȼ��Ч��
+	会话：
+	Session会话是指客户端会话，在Zookeeper中，一个客户端链接是指客户端与服务端之间的一个TCP链接，
+客户端在启动的时候首先会与服务器建立一个TCP连接，通过这个链接，客户端能够通过心跳检测与服务器保
+持有效的会话，也能向Zookeeper服务器发送请求并获得响应。同时还能够通过该链接接收来自服务器的Wather
+事件通知，SessionTimeout值来设置一个客户端会话的超时时间。当由于服务器压力过大，网络故障，客户端断
+开等各种原因导致客户端链接断开时，只要在sessionTimeout值范围内，其客户端的会话依然有效。
 	
-	���ݽڵ㣺
-	Zookeeper�ڵ�ֳ����ࣺһ��ָ��Ⱥ�еĻ�������Ϊ�����ڵ㡣�ڶ�������ָ����ģ���е����ݵ�Ԫ
-ZNode��
-	Znode��Ϊ�־û��ڵ����ʱ�ڵ㣬�־û��ڵ�һֱ������Zookeeper�ϣ���ʱ�ڵ���������ںͿͻ���
-�Ự�󶨣��ͻ��˻ỰʧЧ������ʱ�ڵ�ͻᱻ�Ƴ���Zookeeper�������û�Ϊÿһ���ڵ�����һ���������ԣ�
-SEQENTIAL(����Zookeeper���Զ�����ڵ�������һ���������֣�����������)����Ϊ˳��ڵ㡣
+	数据节点：
+	Zookeeper节点分成两类：一类指集群中的机器，称为机器节点。第二类则是指数据模型中的数据单元
+ZNode。
+	Znode分为持久化节点和临时节点，持久化节点一直保存在Zookeeper上，临时节点的生命周期和客户端
+会话绑定，客户端会话失效，则临时节点就会被移除。Zookeeper还允许用户为每一个节点添加一个特殊属性：
+SEQENTIAL(就是Zookeeper会自动在其节点后面加上一个整型数字，自增的数字)，称为顺序节点。
 
-	�汾��
-	Zookeeper��Ϊÿ��Znodeά��һ������Stat�����ݽṹ���ṹ��ͼ��
-	�汾����	˵��
-	version		��ǰ���ݽڵ��������ݵİ汾��
-	cversion	��ǰ���ݽڵ��ӽڵ�İ汾��
-	aversion	��ǰ���ݽڵ�ACL����汾��
+	版本：
+	Zookeeper会为每个Znode维护一个叫作Stat的数据结构，结构如图：
+	版本类型	说明
+	version		当前数据节点数据内容的版本号
+	cversion	当前数据节点子节点的版本号
+	aversion	当前数据节点ACL变更版本号
 	
 	Wather:
-	�¼���������Zookeeper�����û���ָ���ڵ���ע��һЩWatcher�������ݽڵ㷢���仯��ʱ��Zookeeper
-�������������仯��֪ͨ���͸�����Ȥ�Ŀͻ���
-	1.һ���Դ�����
-	client��һ���ڵ�������watch�����ڵ����ݸı䣬client����ȡ�¼������ڵ������ٴθı䣬client
-�����ȡ����¼�����������ִ����һ�ζ�����������watch��
-	2.������client��watch�¼��ӳ�
-	watch�¼��첽�������۲��ߡ�����˵clientִ��һ��д�������ڵ��������ݷ����仯���������غ󣬶�watch
-�¼����ܻ��ڷ���client��·�ϡ���������£�Zookeeper�ṩ����֤��client�����֪���ݱ仯��ֱ������ȡ
-watch�¼��������ӳٻ��������ؿ��ܵ��²�ͬclient�ڲ�ͬʱ�̻�ȡwatch�¼��Ͳ�������ֵ��
-	3.����watch����������
-	�漰���ڵ�ı�Ĳ�ͬ��ʽ���ȷ�˵Zookeeperά������watch�б����ڵ������watch���ӽڵ�watch��
-getData()��exits()����������watch��getChildren()�������ӽڵ�watch���������ص��������Ͳ�ͬ��ǰ����
-�ڵ�����ݣ������ǽڵ��"�ӽڵ�watch"��delete()ͬʱ����"����watch"��"�ӽڵ�watch"(���ӽڵ㱻ȫ��ɾ��)��
-�Լ��丸�ڵ��"�ӽڵ�watch"��˵���ˣ��Ե�ǰ�ڵ�Ĳ�����Ҫ���ǵ����丸�ڵ���ӽڵ��Ӱ�졣
-	watch�ڿͻ��������ӵķ���˱���ά����watch�����á�ά�����ַ��������������������ͻ������ӵ��µ�
-����ˣ�watch������һ�Ự�¼������������˶Ͽ�����ʱ�����ܻ�ȡwatch�¼����ͻ���������֮ǰע���
-watch��������ע�Ტ����Ҫʱ������ͨ����һ��͸���ط������û�������������һ�����watch���ܶ�ʧ��֮ǰ
-��һ����δ�����Ľڵ�������exists watch������Ͽ��ڼ�ýڵ㱻������ɾ������ô��watch����ʧ��
-	����watch��Zookeeper�ṩ���±�֤��
-	1.watch���������¼���watch���첽��Ӧ������ġ�Zookeeper client library��֤����ַ�
-	2.�ͻ��˼���һ���ڵ㣬�����Ȼ�ȡwatch�¼����ٷ��ֽڵ�����ݱ仯��
-	3.watch�¼���˳���Ӧ��Zookeeper�������������ݸ��µ�˳��
-	����watchҪ��ס���ǣ�
-	1.watch��һ���Դ����ģ������ȡһ��watch�¼���ϣ���õ��±仯��֪ͨ����Ҫ��������watch
-	2.watch��һ���Դ����Ĳ����ڻ�ȡwatch�¼���������watch�¼�֮�����ӳ٣����Բ��ܿɿ��Ĺ۲쵽�ڵ��
-ÿһ�α仯��Ҫ��ʶ����һ�㡣
-	3.watch objectֻ����һ�Σ����磬һ��watch object��ע�ᵽͬһ���ڵ��getData()��exists(),�ڵ㱻ɾ����
-����Ӧ��exists()��watch object������
-	4.���ڷ���˶Ͽ����ӣ�ֱ����������ܻ�ȡwatch�¼���
+	事件监听器，Zookeeper允许用户在指定节点上注册一些Watcher，当数据节点发生变化的时候，Zookeeper
+服务器会把这个变化的通知发送给感兴趣的客户端
+	1.一次性触发器
+	client在一个节点上设置watch，随后节点内容改变，client将获取事件。当节点内容再次改变，client
+不会获取这个事件，除非它又执行了一次读操作并设置watch。
+	2.发送至client，watch事件延迟
+	watch事件异步发送至观察者。比如说client执行一次写操作，节点数据内容发生变化，操作返回后，而watch
+事件可能还在发往client的路上。这种情况下，Zookeeper提供有序保证：client不会得知数据变化，直到它获取
+watch事件。网络延迟或其他因素可能导致不同client在不同时刻获取watch事件和操作返回值。
+	3.设置watch的数据内容
+	涉及到节点改变的不同方式。比方说Zookeeper维护两个watch列表：节点的数据watch和子节点watch。
+getData()和exits()设置了内容watch，getChildren()设置了子节点watch，操作返回的数据类型不同，前者是
+节点的内容，后者是节点的"子节点watch"，delete()同时出发"内容watch"和"子节点watch"(其子节点被全部删除)，
+以及其父节点的"子节点watch"。说白了，对当前节点的操作，要考虑到对其父节点和子节点的影响。
+	watch在客户端所连接的服务端本地维护。watch的设置、维护、分发操作都很轻量级。当客户端连接到新的
+服务端，watch将被任一会话事件触发。与服务端断开连接时，不能获取watch事件。客户端重连后，之前注册的
+watch将被重新注册并在需要时触发。通常这一切透明地发生，用户不会察觉到。有一种情况watch可能丢失：之前
+对一个尚未建立的节点设置了exists watch，如果断开期间该节点被建立或删除，那么此watch将丢失。
+	对于watch，Zookeeper提供以下保证：
+	1.watch对于其他事件、watch、异步响应是有序的。Zookeeper client library保证有序分发
+	2.客户端监视一个节点，总是先获取watch事件，再发现节点的数据变化。
+	3.watch事件的顺序对应于Zookeeper服务所见的数据更新的顺序。
+	关于watch要记住的是：
+	1.watch是一次性触发的，如果获取一个watch事件并希望得到新变化的通知，需要重新设置watch
+	2.watch是一次性触发的并且在获取watch事件和设置新watch事件之间有延迟，所以不能可靠的观察到节点的
+每一次变化。要认识到这一点。
+	3.watch object只触发一次，比如，一个watch object被注册到同一个节点的getData()和exists(),节点被删除，
+仅对应于exists()的watch object被调用
+	4.若于服务端断开连接，直到重连后才能获取watch事件。
 	
-	watch�¼����ͣ�
-	ZOO_CREATED_EVENT: �ڵ㴴���¼�����Ҫwatchһ�������ڵĽڵ㣬���ڵ㱻����ʱ��������watchͨ��zoo_exists()
-���ã�
-	ZOO_DELETED_EVENT: �ڵ�ɾ���¼�����watchͨ��zoo_exists()��zoo_get()���ã�
-	ZOO_CHANGED_EVENT: �ڵ����ݸı��¼�����watchͨ��zoo_exists()��zoo_get()���ã�
-	ZOO_CHILD_EVENT: �ӽڵ��б��ı��¼�����watchͨ��zoo_get_children()��zoo_get_children2()���ã�
-	ZOO_SESSION_EVENT: �ỰʧЧ�¼����ͻ��������˶Ͽ�������ʱ����
-	ZOO_NOTWATCHING_EVENT: watch�Ƴ��¼�������˳���ĳЩԭ����Ϊ�ͻ���watch�ڵ�ʱ������
+	watch事件类型：
+	ZOO_CREATED_EVENT: 节点创建事件，需要watch一个不存在的节点，当节点被创建时触发，此watch通过zoo_exists()
+设置；
+	ZOO_DELETED_EVENT: 节点删除事件，此watch通过zoo_exists()或zoo_get()设置；
+	ZOO_CHANGED_EVENT: 节点数据改变事件，此watch通过zoo_exists()或zoo_get()设置；
+	ZOO_CHILD_EVENT: 子节点列表改变事件，此watch通过zoo_get_children()或zoo_get_children2()设置；
+	ZOO_SESSION_EVENT: 会话失效事件，客户端与服务端断开或重连时触发
+	ZOO_NOTWATCHING_EVENT: watch移除事件，服务端出于某些原因不再为客户端watch节点时触发。
 	
 	
-ACLȨ�޿���:
-	ACL��AccessControl Lists����д��Zookeeper����ACL����������Ȩ�޿��ƣ�������Ȩ�ޣ�
-	CREATE�������ӽڵ��Ȩ��
-	READ����ȡ�ڵ����ݺ��ӽڵ��б���Ȩ��
-	WRITE�����½ڵ����ݵ�Ȩ��
-	DELETE��ɾ���ӽڵ��Ȩ��
-	ADMIN�����ýڵ�ACL��Ȩ��
+ACL权限控制:
+	ACL是AccessControl Lists的缩写，Zookeeper采用ACL策略来进行权限控制，有以下权限：
+	CREATE：创建子节点的权限
+	READ：获取节点数据和子节点列表的权限
+	WRITE：更新节点数据的权限
+	DELETE：删除子节点的权限
+	ADMIN：设置节点ACL的权限
 	
 
 
