@@ -1,0 +1,67 @@
+Netty编程小结：
+	1.创建两个NioEventLoopGroup实例，NioEventLoopGroup是一个线程组，它包含了一组NIO
+线程，专门用于网络事件的处理。
+	2.创建ServerBootstrap对象，它是Netty用于启动NIO服务端的辅助启动类。
+	3.调用ServerBootstrap的group方法，将两个NIO线程组当作入参传递到ServerBootstrap中
+	4.设置创建的Channel为NIOServerSocketChannel
+	5.配置NioServerSocketChannel的TCP参数，此处将它的backlog设置为1024，最后绑定I/O
+事件的处理类ChildChannelHandler。
+
+	ChannelHandler方法简介：
+	channelActive(ChannelHandlerContext ctx) ：发送消息用。
+	channelRead(ChannelHandlerContext ctx, Object msg) ：接收到消息之后处理用。
+	exceptionCaught(ChannelHandlerContext ctx, Throwable cause) ：异常处理方法。
+
+
+1.TCP粘包问题
+	TCP底层并不了解上层业务数据的具体含义，它会根据TCP缓冲区的实际情况进行包的划分，
+所以在业务上认为，一个完整的包可能会被TCP拆分成多个包进行发送，也有可能把多个小的包
+封装成一个大的数据包发送，这就是所谓的TCP粘包和拆包问题。
+	TCP粘包/拆包发生的原因：
+	1.应用程序writer写入的字节大小大于套接口发送缓冲区大小；
+	2.进行MSS大小的TCP分段；
+	3.以太网帧的payload大于MTU进行IP分片。
+	
+	TCP粘包/拆包解决策略：
+	1.消息定长，例如每个报文的大小为固定长度200字节，如果不够，空位补空格；
+	2.在包尾增加回车换行符进行分割，例如FTP协议；
+	3.将消息分为消息头和消息体，消息头中包含表示消息总长度(或者消息体长度)的字段，
+通常设计思路为消息头的第一个字段使用int32来表示消息的总长度；
+	4.更复杂的应用层协议。
+	
+	Netty提供多种编解码器用于处理半包，只要能熟练掌握这些类库的使用，TCP粘包问题
+从此会变得非常容易，你甚至不需要关心它们。
+
+	DelimiterBaseFrameDecoder解码器:用于对使用分隔符结尾的消息进行自动解码；
+	FixedLengthFrameDecoder解码器:用于对固定长度的消息进行自动解码。
+	LengthFieldBasedFrameDecoder解码器：比较复杂，有5个参数
+		maxFrameLength：最大长度；
+		lengthFieldOffset：长度字段从第几位开始；
+		lengthFieldLength：长度字段的长度；
+		lengthAdjustment：调整长度；
+		initialBytesToStrip：除去多少位长度的长度信息。
+
+
+Http协议：包括：请求行，请求头，请求体。
+
+	WebSocket是HTML5开始提供的一种浏览器间进行全双工通信的网络技术，在WebSocketAPI
+中，浏览器和服务器只需要做一个握手的动作，然后，浏览器和服务器之间就形成了一条快速
+通道，两者就可以直接相互传送数据了。WebSocket基于TCP双向全双工进行消息传递，在同一
+时刻，既可以发送消息，也可以接收消息，相比Http的半双工协议，性能得到很大提升。
+
+	下面总结一下WebSocket的特点：
+	1.单一的TCP链接，采用全双工模式通信；
+	2.对代理、防火墙和路由器透明；
+	3.无头部信息、Cookie和身份验证；
+	4.无安全开销；
+	5.通过"ping/pong"帧保持链路激活；
+	6.服务器可以主动传递消息给客户端，不再需要客户端轮询。
+	
+	为了建立一个WebSocket连接，客户端浏览器首先要向服务器发起一个HTTP请求，这个请
+求和通常的HTTP请求不同，包含了一些附加头信息，其中附加头信息"Upgrade:WebSocket"表
+明这是一个申请协议升级的HTTP请求。服务器端解析这些附加的头信息，然后生成应答信息
+返回给客户端，客户端和服务器端的WebSocket连接就建立起来了。双方可以通过这个连接通
+道自由地传递信息，并且这个连接会持续存在直到客户端或者服务器端的某一方主动关闭连接。
+
+	
+	

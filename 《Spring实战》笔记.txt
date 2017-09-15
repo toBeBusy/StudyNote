@@ -31,4 +31,69 @@ Bean的ID。
 	例：@Improt(CDPlayerConfig.class)
 		@ImportResource("classpath:cd-config.xml")
 		
+
 5.@Profile("dev")标签。
+	(1)通过设定Environment的ActiveProfiles来设定当前context需要使用的配置环境。在开发
+中使用@profile注解类或者方法，达到在不同情况下选择实例化不同的Bean。
+	(2)通过设定jvm的spring.profiles.active参数来设置配置环境。
+	(3)Web项目设置在Servlet的context parameter中。
+	
+
+6.事件(Application Event)
+	Spring的事件(Application Event)为Bean与Bean之间的消息通信提供了支持。当一个Bean处
+理完一个任务之后，希望另外一个Bean知道并能做相应的处理，这时我们就需要让另外一个Bean监
+听当前Bean所发送的事件。
+	Spring的事件需要遵循如下流程：
+	(1)自定义事件，集成ApplicationEvent。
+	(2)定义事件监听器，实现ApplicationListener。
+	(3)使用容器发布事件。
+
+	
+7.Spring Aware
+	Spring的依赖注入的最大亮点就是你所有的Bean对Spring容器的存在是没有意识的。即你可以
+将你的容器替换成别的容器，如Google Guice，这时Bean之间的耦合度很低。
+	但是在实际项目中，你不可避免的要用到Spring容器本身的功能资源，这时你的Bean必须意识
+到Spring容器的存在，才能调用Spring所提供的资源，这就是所谓的Spring Aware。其实Spring 
+Aware本来就是Spring设计用来框架内部使用的。
+	BeanNameAware：获得到容器中Bean的名称
+	BeanFactoryAware：获得当前bean factory，这样可以调用容器的服务
+	ApplicationContextAware：当前的application context，这样可以调用容器的服务
+	MessageSourceAware：获得message source，这样可以获得文本信息
+	ApplicationEventPublisherAware：应用事件发布器，可以发布事件
+	ResourceLoaderAware: 获得资源加载器，可以获得外部资源文件
+	
+
+8.多线程
+	Spring通过任务执行器(TaskExecutor)来实现多线程和并发编程。使用ThreadPoolTaskExecutor
+可实现一个基于线程池的TaskExecutor。而实际开发中任务一般是非阻碍的，即异步的，所以我们要
+在配置类中通过@EnableAsync开启对异步任务的支持，并通过在实际执行的Bean的方法中使用@Async
+注解来声明其实一个异步任务。
+
+	
+9.计划任务
+	从Spring3.1开始，计划任务在Spring中的实现变得异常简单。首先通过在配置类注解
+@EnableScheduling来开启对计划任务的支持，然后在要执行计划任务的方法上注解@Scheduled，声
+明这是一个计划任务。
+	Spring通过@Scheduled支持多种类型的计划任务，包含cron、fixDelay、fixRate等。
+	@Scheduled(fixedRate = 5000)   //每隔五秒执行一次
+	@Scheduled(cron = "0 28 11 ? * *")    //指定时间执行
+	
+	
+10.测试(重点)
+	测试是开发工作中不可缺少的部分。单元测试只针对当前开发的类和方法进行测试，可以简单
+通过模拟依赖来实现，对运行环境没有依赖；但是仅仅进行单元测试是不够的。它只能验证当前类
+或方法能否正常工作，而我们想要知道系统的各个部分组合在一起是否能正常工作，这就是集成测
+试存在的意义。
+	集成测试一般需要来自不同层的不同对象的交互，如数据库、网络连接、IoC容器等。其实我们
+也经常通过运行程序，然后通过自己操作来完成类似于集成测试的流程。集成测试为我们提供了一
+种无须部署或运行程序来完成验证系统各部分是否能正常协同工作的能力。
+	Spring通过Spring TestContext Framework对集成测试提供顶级支持，它不依赖于特定的测试
+框架，既可使用Junit，也可使用TestNG。
+	基于Maven构建的项目结构默认有关于测试的目录：src/test/java(测试代码)、
+src/test/resources(测试资源)。
+	Spring提供了一个SpringJUnit4ClassRunner类，它提供了Spring TestContext Framework的
+功能。通过@ContextConfiguration来配置Application Context，通过@ActiveProfiles确定活动
+的profile。
+	
+	
+

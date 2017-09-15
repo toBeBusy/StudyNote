@@ -1,0 +1,103 @@
+博客地址：http://www.cnblogs.com/ITtangtang/p/3926665.html
+
+1.Java日志API由以下三个核心组件组成：
+	Loggers：Logger负责捕捉事件并将其发送给合适的Appender。
+	Appenders：也被称为Handlers，负责将日志事件记录到目标位置。在将日志事件输出之前，
+Appenders使用Layouts来对事件进行格式化处理。
+	Layouts：也被称为Formatters。它负责对日志事件中的数据进行转换和格式化。Layouts决
+定了数据在一条日志记录中的最终形式。
+	当Logger记录一个事件时，它将事件转发给适当的Appender。然后Appender使用Layout来对
+日志记录进行格式化，并将其发送给控制台、文件或者其它目标位置。另外，Filters可以让你
+进一步指定一个Appender是否可以应用在一条特定的日志记录上。在日志配置中，Filter并不是
+必需的，但可以让你更灵活地控制日志消息的流动。
+
+日志框架
+	在Java中，输出日志需要使用一个或者多个日志框架，这些框架提供了必要的对象、方法和
+配置来传输消息。Java在java.util.logging包中提供了一个默认的框架。除此之外，还有很多
+其它第三方框架，包括Log4j、Logback以及tinylog。它们提供了一些抽象层，对你的代码和日志
+框架进行解耦，从而允许你在不同的日志框架中进行切换。
+
+
+抽象层
+	诸如slf4j这样的抽象层，会将你的应用程序从日志框架中解耦。应用程序可以在运行时选择
+绑定到一个特定的日志框架(例如java.util.logging、或者log4j或者logback)，这通过在应用
+程序的类路径中添加对应的日志框架来实现。如果在类路径中配置的日志框架不可用，抽象层就会
+立刻取消调用日志的相应逻辑。抽象层可以让我们更加容易地改变项目现有的日志框架，或者集成
+那些使用了不同日志框架的项目。
+	
+
+配置	
+	尽管所有的Java日志框架都可以通过代码进行配置，但是大部分配置还是通过外部配置文件完
+成的。这些文件决定了日志消息在何时通过什么方式进行处理，日志框架可以在运行时加载这些文
+件。在这一节中提供的大部分配置示例都使用了配置文件。
+
+
+1.配置根Logger:
+	log4j.rootLogger=[level],appenderName1,appenderName2,...
+	log4j.additivity.org.apache=false:表示Logger不会在父Logger的appender里输出，默认为
+true。
+	level:设定日志记录的最低级别，可设的值有OFF、FATAL、ERROR、WARN、INFO、DEBUG、ALL
+或者自定义的级别，Log4j建议只使用中间四个级别。通过在这里设定级别，可以控制应用程序中
+相应级别的日志信息的开关，比如在这里设定了INFO级别，则应用程序中所有DEBUG级别的日志信息
+将不会被打印出来。
+	appendName:就是指定日志信息要输出到哪里。可以同时指定多个输出目的地，用逗号隔开。
+	例如：log4j.rootLogger=INFO,A1,B2,C3
+
+2.配置日志信息输出目的地(appender):
+	log4j.appender.appendName=className
+	appendName:自定义appendName,在log4j.rootLogger设置中使用；
+	className:可设值如下：
+	(1)org.apache.log4j.ConsoleAppender(控制台)
+	(2)org.apache.log4j.FileAppender(文件)
+	(3)org.apache.log4j.DailyRollingFileAppender(每天产生一个日志文件)
+	(4)org.apache.log4j.RollingFileAppender(文件大小到达指定尺寸的时候产生一个新的文件)
+	(5)org.apache.log4j.WriterAppender(将日志信息以流格式发送到任意指定的地方)
+1.ConsoleAppender选项：
+	Threshold=WARN：指定日志信息的最低输出级别，默认为DEBUG。
+	ImmediateFlush=TRUE：表示所有消息都会被立即输出，设为false则不输出，默认值是true。
+	Target=System.err：默认值是System.out。
+2.FileAppender选项：
+	Threshold=WARN：指定日志信息的最低输出级别，默认为DEBUG。
+	ImmediateFlush=true：表示所有消息都会被立即输出，设为false则不输出，默认值是true。
+	Append=false：true表示消息增加到指定文件中，false则将消息覆盖指定的文件内容，默认值是
+true。
+	File=D:/logs/logging.log4j。指定消息输出到logging.log4j文件中。
+3.DailyRollingFileAppender选项：
+	Threshold=WARN：指定日志信息的最低输出级别，默认为DEBUG。
+	ImmediateFlush=true：表示所有消息都会被立即输出，设为false则不输出，默认值是true。
+	Append=false：true表示消息增加到指定文件中，false则将消息覆盖指定的文件内容，默认值
+是true。
+	File=D:/logs/logging.log4j:指定当前消息输出到logging.log4j文件中。
+	DatePattern='.'yyyy-MM：每月滚动一次日志文件，即每月产生一个新的日志文件。当前月的日
+志文件名为logging.log4j，前一个月的日志文件名为logging.log4j.yyyy-MM。另外，也可以指定按
+周、天、时、分等来滚动日志文件，对应的格式如下：
+	1)'.'yyyy-MM：每月
+	2)'.'yyyy-ww：每周
+	3)'.'yyyy-MM-dd：每天
+	4)'.'yyyy-MM-dd-a：每天两次
+	5)'.'yyyy-MM-dd-HH：每小时
+	6)'.'yyyy-MM-dd-HH-mm：每分钟
+4.RollingFileAppender选项：
+	Threshold=WARN：指定日志信息的最低输出级别，默认为DEBUG。
+	ImmediateFlush=true：表示所有消息都会被立即输出，设为false则不输出，默认值是true。
+	Append=false：true表示消息增加到指定文件中，false则将消息覆盖指定的文件内容，默认值是true。
+	File=D:/logs/logging.log4j：指定消息输出到logging.log4j文件中。
+	MaxFileSize=100KB：后缀可以是KB, MB 或者GB。在日志文件到达该大小时，将会自动滚动，即将原来的内容移到logging.log4j.1文件中。
+	MaxBackupIndex=2：指定可以产生的滚动文件的最大数，例如，设为2则可以产生logging.log4j.1，logging.log4j.2两个滚动文件和一个logging.log4j文件。
+
+
+3、配置日志信息的输出格式（Layout）：
+	log4j.appender.appenderName.layout=className
+	className：可设值如下：
+		(1)org.apache.log4j.HTMLLayout（以HTML表格形式布局）
+		(2)org.apache.log4j.PatternLayout（可以灵活地指定布局模式）
+		(3)org.apache.log4j.SimpleLayout（包含日志信息的级别和信息字符串）
+		(4)org.apache.log4j.TTCCLayout（包含日志产生的时间、线程、类别等等信息）
+	1.HTMLLayout选项：
+		LocationInfo=true：输出java文件名称和行号，默认值是false。
+		Title=My Logging： 默认值是Log4J Log Messages。
+	2.PatternLayout选项：
+		ConversionPattern=%m%n：设定以怎样的格式显示消息。
+
+		
+	
