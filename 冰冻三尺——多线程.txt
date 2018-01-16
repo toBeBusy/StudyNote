@@ -191,13 +191,14 @@ CountDownLatch不同的是，CyclicBarrier可以通过构造方法指定，当�
 
 线程池技术ThreadPoolExecutor(自己总结的)：
 	1.线程池中有两个List类型的成员变量。因为会有多线程操作，所以要保证是线程安全的。其中一个List变量里面保存的是
-用来执行任务的线程，称为workList；另一个变量里面保存的是将要被执行的任务，称为jobList。workList中所有的worker都是一个线程。每个线程挨个从jobList里面取出job并执行期run方法。切记，是执行job的run方法，不是start方法。
+用来执行任务的线程，称为workList；另一个变量里面保存的是将要被执行的任务，称为jobList。workList中所有的worker都
+是一个线程。每个线程挨个从jobList里面取出job并执行期run方法。切记，是执行job的run方法，不是start方法。
 
 	2.若线程池中任务已满，会执行RejectedExecutionHandler接口中的rejectedExecution方法。这个handler可以自己实现，
 默认的实现是抛出一个RejectedExecutionException异常。
 
-	3.线程池中的worker执行若出现错误，会运行ThreadPoolExecutor中的afterExecute(Runnable r, Throwable t)方法，该方法默认是没有语句的
-可以继承ThreadPoolExecutor类，并重写该方法。
+	3.线程池中的worker执行若出现错误，会运行ThreadPoolExecutor中的afterExecute(Runnable r, Throwable t)方法，该
+方法默认是没有语句的可以继承ThreadPoolExecutor类，并重写该方法。
 
 	阻塞
 	1.在任何时候线程必须停下来等待它没有的资源时，就会发生阻塞。常见的阻塞有阻塞于I/O，阻塞于锁。
@@ -239,3 +240,21 @@ CountDownLatch不同的是，CyclicBarrier可以通过构造方法指定，当�
 总是尝试不成功，则会出现类似饥饿的现象，线程会停止不前。
 	无等待：
 	无等待要求所有线程都必须在有限步内完成，这样就不会引起饥饿问题。
+	
+	
+	
+	
+	什么是CAS
+	CAS，全称为Compare and Swap，即比较-替换。假设有三个操作数：内存值V、旧的预期值A、
+要修改的值B，当且仅当预期值A和内存值V相同时，才会将内存值修改为B并返回true，否则什么都
+不做并返回false。当然CAS一定要volatile变量配合，这样才能保证每次拿到的变量是主内存中最
+新的那个值，否则旧的预期值A对某条线程来说，永远是一个不会变的值A，只要某次CAS操作失败，
+永远都不可能成功。
+
+ 
+	
+	unsafe类的objectFieldOffset方法，计算成员变量的偏移量(其实就是找到该成员变量的内存地址)。
+	再通过compareAndSwap方法进行线程同步。
+	
+	ReentrantLock源码解析：
+	

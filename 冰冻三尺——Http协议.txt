@@ -15,3 +15,6 @@
 		3.User-Agent:浏览器的一些信息
 		4.Referer:来访页面
 		5.Content：实体内容；post才有
+		
+
+4.
