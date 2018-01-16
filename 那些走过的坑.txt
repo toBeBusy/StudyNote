@@ -1,41 +1,5 @@
-1.Java和JavaScript中，&&的运算优先级高于||。
-	System.out.println(false && true || true);    
-	System.out.println(true || true && false);
-两句代码的返回值都是true。
-所以，尽量使用括号，而不是代码的优先级来决定代码的执行顺序，不然能坑死你。。。
+1.将文件转正字符流用Base64编码之后保存到数据库。
 
+2.用nginx做代理，可以屏蔽客户端的ip，通过服务器来发送请求。解决IP白名单问题。
 
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-2.
-		List<String> listOne = resultMap.get(one);
-		if (listOne == null) {
-			listOne = new ArrayList<String>();
-			resultMap.put(one, listOne);
-		}
-		listOne.add(two);
-//		why(resultMap, one, two);
-
-		List<String> listTwo = resultMap.get(two);
-		if (listTwo == null) {
-			listTwo = new ArrayList<String>();
-			resultMap.put(two, listTwo);
-		}
-		listTwo.add(one);
-//		why(resultMap, two, one);
-
-
-	public void why(Map<String, List<String>> resultMap, String one, String two){
-		List<String> listTwo = resultMap.get(two);
-		if (listTwo == null) {
-			listTwo = new ArrayList<String>();
-			resultMap.put(two, listTwo);
-		}
-		listTwo.add(one);
-	}
-将五行语句提炼成一个方法，上万次运行后，提炼方法的会比直接写的快。。。。别问我为
-什么，我特么也不知道。。。。
-
----------------------------------------------------------------------------------
----------------------------------------------------------------------------------
+3.Java中数字签名RSASignature算法的使用,包括生成key,加密,解密。http://blog.csdn.net/cheng9981/article/details/52825554
