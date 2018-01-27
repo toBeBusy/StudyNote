@@ -1,0 +1,60 @@
+1.List
+	实现类LinkedList、ArrayList、Vector。
+注意点：
+	LinkedList类
+	LinkedList实现了List接口，允许null元素。此外LinkedList提供额外的get，
+remove，insert方法。这些操作使LinkedList可被用作堆栈（stack），队列（queue）
+或双向队列（deque）。
+	注意LinkedList没有同步性。如果多个线程同时访问一个LinkedList，则必须
+自己实现访问同步。另一种解决方法是在创建List时构造一个同步的List：
+List list = Collections.synchronizedList(new LinkedList(...));
+
+	ArrayList类
+	ArrayList实现了大小可变的数组。它允许所有元素，包括null。ArrayList没有
+同步性。size，isEmpty，get，set方法运行时间为常数。但是add方法开销为分摊的
+常数，添加n个元素需要O(n)的时间。其他的方法运行时间为线性。
+	每个ArrayList实例都有一个容量（Capacity），即用于存储元素的数组的大小。
+这个容量可随着不断添加新元素而自动增加，但是增长算法并没有定义。当需要插入
+大量元素时，在插入前可以调用ensureCapacity方法来增加ArrayList的容量以提高
+插入效率。
+
+
+	1)LinkedList和ArrayList的底层实现不同。LinkedList底层是链表，ArrayList
+底层是数组。数组根据下标查找元素很快。但是删除和增加元素会慢，需要一个个的
+挪位置。链表删除和增加元素比较快。
+	2)Vector是线程安全的。
+	3)创建ArrayList的时候构造方法指定初始容量，避免扩容，提高效率。
+
+	
+2.set接口
+	1)Set是一种不包含重复元素的Collection，即任意的两个元素e1和e2都有
+e1.equals(e2)=false，Set最多有一个null元素。
+	2)很明显，Set的构造函数有一个约束条件，传入的Collection参数不能包含
+重复的元素。
+	注意：必须小心操作可变对象。如果一个Set中的可变元素改变了自身的状态
+导致e1.equals(e2)=true将导致一些问题。例如:内存泄漏。
+	HashSet依赖于HashMap，它实际上是通过HashMap实现的；TreeSet依赖于
+TreeMap，它实际上是通过TreeMap实现的。
+
+
+3.map接口
+	HashMap，TreeMap
+	HashMap是一个散列表，TreeMap是一棵红黑树。
+
+
+加分项：
+1.WeakHashMap和HashMap的区别
+	WeakHashMap和HashMap一样，也是个散列表，它存储的内容也是
+键值对(key-value)映射，而且键和值都可以为null。不过WeakHashMap
+的键是“弱键”。当WeakHashMap某个键不再正常使用时，会被从
+WeakHashMap自动删除。更精确的说，对于一个给定的键，其映射的
+存在并不能阻止垃圾回收器对该键的丢弃，这就使该称为被终止的，
+被终止，然后被回收。此时就可以认为该键值对应该被WeakHashMap
+删除。因此，WeakHashMap使用了弱引用作为内部数据的存储方案。
+	WeakHashMap可以作为简单缓存表的解决方案，当系统内存不足
+时，垃圾收集器会自动的清除没有在任何其他地方被引用的键值对。
+如果需要用一张很大的Map作为缓存表时，那么可以考虑使用WeakHashMap。
+	WeakHashMap当系统内存不足时，垃圾收集器会自动的清除没有
+在任何其他地方被引用的键值对，因此可以作为简单缓存表的解决方
+案。而HashMap就没有上述功能。
+

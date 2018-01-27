@@ -6,7 +6,8 @@
 
 
 2.装载JVM.cfg：
-	1.JVM.cfg文件JRE路径+\lib+\ARCH（CPU构架）+\JVM.cfgARCH（CPU构架）的判断是通过Java_md.c中GetArch函数判断的，该函数中windows平台只有两种情况：WIN64的‘ia64’，其他情况都为‘i386’。
+	1.JVM.cfg文件JRE路径+\lib+\ARCH（CPU构架）+\JVM.cfgARCH（CPU构架）的判断是通过Java_md.c中GetArch函数判断的，该函数中windows平台只有两种情况：
+WIN64的‘ia64’，其他情况都为‘i386’。
 	2.在我们的jdk目录中jre\bin\server和jre\bin\client都有JVM.dll文件存在，而Java正是通过JVM.cfg配置文
 件来管理这些不同版本的JVM.dll的．
 	3.获得JVM.dll的路径，JRE路径+\bin+\JVM类型字符串+\JVM.dll就是JVM的文件路径了，但是如果在调用Java
@@ -26,14 +27,12 @@
 5.运行Java程序
 
 
-
 GC基础：
-	1.JAVA内存主要由Perm和Heap组成。
-	2.Perm中主要存放JVM自己的反射对象，比如类对象和方法对象等。
+	1.JAVA内存主要由方法区(Perm)和堆内存(Heap)组成。
+	2.方法区中主要存放JVM自己的反射对象，比如类对象和方法对象等。
 	3.Heap又分为Old区和Yong区。Yong区又分为Eden和两个Survivor Spaces(from,to)。
 Eden用来存放新生的对象。survivor用来存放Yong区中每次GC过后存活下来的对象。Old区主要存放应用程序中生命
 周期长的内存对象。
-
 
 
 垃圾回收描述：
@@ -155,8 +154,8 @@ Variables),操作数栈(Operand Stack)，指向当前方法所属的类的运行
 
 
 Java对象的内存布局
-	对象在内存中存储的布局分为三块：
-	1.对象头
+对象在内存中存储的布局分为三块：
+1.对象头
 	a.存储对象自身的运行时数据：Mark Work(在32bit和64bit虚拟机上长度分别为32bit和64bit)，包含
 如下信息：
 	  对象hashCode
@@ -167,8 +166,8 @@ Java对象的内存布局
 的性能与ReentrantLock的性能持平，在Synchronized可以满足要求的情况下，优先使用Synchronized，除非是
 使用一些ReentrantLock独有的功能，例如指定时间等待等。
 	b.类型指针：对象指向类元数据的指针，JVM通过这个指针来确定这个对象是哪个类的实例。
-	2.实例数据：对象真正存储的有效信息。
-	3.对齐填充：JVM要求对象的大小必须是8的整数倍，若不是，需要补位对齐。
+2.实例数据：对象真正存储的有效信息。
+3.对齐填充：JVM要求对象的大小必须是8的整数倍，若不是，需要补位对齐。
 
 
 如何判断对象是否可被回收：
